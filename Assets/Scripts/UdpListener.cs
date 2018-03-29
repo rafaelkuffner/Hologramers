@@ -42,13 +42,13 @@ public class UdpListener : MonoBehaviour {
 
         _stringsToParse = new List<byte[]>();
         
-		_anyIP = new IPEndPoint(IPAddress.Any, TrackerProperties.Instance.listenPort);
+		_anyIP = new IPEndPoint(IPAddress.Any, TrackerProperties.Instance.Local_avatarReceivePort);
         
         _udpClient = new UdpClient(_anyIP);
 
         _udpClient.BeginReceive(new AsyncCallback(this.ReceiveCallback), null);
 
-		Debug.Log("[UDPListener] Receiving in port: " + TrackerProperties.Instance.listenPort);
+		Debug.Log("[UDPListener] Receiving in port: " + TrackerProperties.Instance.Local_avatarReceivePort);
     }
     
     public void ReceiveCallback(IAsyncResult ar)

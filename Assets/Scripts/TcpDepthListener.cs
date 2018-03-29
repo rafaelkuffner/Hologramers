@@ -65,7 +65,7 @@ public class TcpDepthListener : MonoBehaviour
 
         _depthStreams = new List<DepthStream>();
 
-        TcpListeningPort = TrackerProperties.Instance.listenPort;
+        TcpListeningPort = TrackerProperties.Instance.Local_avatarReceivePort;
         _server = new TcpListener(IPAddress.Any, TcpListeningPort);
 
         _running = true;

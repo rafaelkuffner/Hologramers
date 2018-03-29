@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 public class TrackerClient : MonoBehaviour
 {
@@ -93,28 +94,37 @@ public class TrackerClient : MonoBehaviour
 
         lastCameraForward = Camera.main.transform.forward;
         lastTrackerForward = spineBase.transform.forward;
-        this.gameObject.transform.parent = GameObject.Find("Origin").transform;
 	}
 
    
 
 	void Update()
 	{
-		if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.PageDown) ||Input.GetKeyDown(KeyCode.Joystick1Button1)) // Mouse tap
-		{
-			string currentHumanId = GetHumanIdWithHandUp();
+        if(trackedHumanId== string.Empty)
+        {
+            
+            trackedHumanId = GetFirstHuman();
+            if(trackedHumanId != string.Empty) { 
+                trackedHuman = humans[trackedHumanId];
+                AdjustAvatarHeight();
+            }
 
-			if (humans.ContainsKey(currentHumanId)) 
-			{
-				trackedHumanId = currentHumanId;
-				trackedHuman = humans[trackedHumanId];
+        }
+        //if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.PageDown) ||Input.GetKeyDown(KeyCode.Joystick1Button1)) // Mouse tap
+        //{
+        //	string currentHumanId = GetHumanIdWithHandUp();
 
-				AdjustAvatarHeight();
-				UnityEngine.XR.InputTracking.Recenter();
-			}
-		}
+        //	if (humans.ContainsKey(currentHumanId)) 
+        //	{
+        //		trackedHumanId = currentHumanId;
+        //		trackedHuman = humans[trackedHumanId];
 
-		if (humans.ContainsKey(trackedHumanId)) 
+        //		AdjustAvatarHeight();
+        //		UnityEngine.XR.InputTracking.Recenter();
+        //	}
+        //}
+
+        if (humans.ContainsKey(trackedHumanId)) 
 		{
 			trackedHuman = humans[trackedHumanId];
 			UpdateAvatarBody();
@@ -141,6 +151,12 @@ public class TrackerClient : MonoBehaviour
 		return string.Empty;
 	}
 
+    private string GetFirstHuman()
+    {
+        if (humans.Values.Count > 0)
+            return humans.Values.First().id;
+        else return string.Empty;
+    }
 	/// <summary>
 	/// Adjusts avatar's height by calculating the 
 	/// ratio between the user and avatar's height.
@@ -155,6 +171,21 @@ public class TrackerClient : MonoBehaviour
 		spineBase.transform.localScale = new Vector3(scaleRatio, scaleRatio, scaleRatio);
 	}
 
+    public Vector3 GetHeadPos()
+    {
+        if (trackedHuman != null)
+            return trackedHuman.body.Joints[BodyJointType.head];
+        else return Vector3.zero;
+    }
+
+    public Vector3 GetForward()
+    {
+        Vector3 spineUp = Utils.GetBoneDirection(spineShoulderJoint.Value, spineBaseJoint.Value);
+        Vector3 spineRight = Utils.GetBoneDirection(rightShoulderJoint.Value, leftShoulderJoint.Value);
+        Vector3 spineForward = Vector3.Cross(spineRight, spineUp);
+        spineForward = transform.TransformDirection(spineForward);
+        return spineForward;
+    }
 	/// <summary>
 	/// Updates the avatar body by filtering body 
 	/// joints and applying them through rotations.
@@ -263,12 +294,11 @@ public class TrackerClient : MonoBehaviour
         Vector3 spineForward = Vector3.Cross(spineRight, spineUp);
         Vector3 projForward = new Vector3(spineForward.x, 0, spineForward.z);
 
-        float dotprod = Vector3.Dot(projForward, headRot);
+        //float dotprod = Vector3.Dot(projForward, headRot);
 
-        if (dotprod < rotationTreshold)
-            invert = true;
+        //if (dotprod < rotationTreshold)
+        //    invert = true;
 
-        print("inverte? " + invert);
         // fim testes para inverter
 
         // Spine
@@ -276,25 +306,25 @@ public class TrackerClient : MonoBehaviour
 		spineShoulderJoint.ApplyFilter(trackedHuman.body.Joints[BodyJointType.spineShoulder], isNewFrame, frameTime);
 
         // Left arm
-        leftShoulderJoint.ApplyFilter(trackedHuman.body.Joints[invert ? BodyJointType.rightShoulder : BodyJointType.leftShoulder], isNewFrame, frameTime);
-        leftElbowJoint.ApplyFilter(trackedHuman.body.Joints[invert ? BodyJointType.rightElbow : BodyJointType.leftElbow], isNewFrame, frameTime);
-        leftWristJoint.ApplyFilter(trackedHuman.body.Joints[invert ? BodyJointType.rightWrist : BodyJointType.leftWrist], isNewFrame, frameTime);
+        leftShoulderJoint.ApplyFilter(trackedHuman.body.Joints[BodyJointType.leftShoulder], isNewFrame, frameTime);
+        leftElbowJoint.ApplyFilter(trackedHuman.body.Joints[BodyJointType.leftElbow], isNewFrame, frameTime);
+        leftWristJoint.ApplyFilter(trackedHuman.body.Joints[BodyJointType.leftWrist], isNewFrame, frameTime);
 
         // Right arm
-        rightShoulderJoint.ApplyFilter(trackedHuman.body.Joints[invert ? BodyJointType.leftShoulder : BodyJointType.rightShoulder], isNewFrame, frameTime);
-        rightElbowJoint.ApplyFilter(trackedHuman.body.Joints[invert ? BodyJointType.leftElbow : BodyJointType.rightElbow], isNewFrame, frameTime);
-        rightWristJoint.ApplyFilter(trackedHuman.body.Joints[invert ? BodyJointType.leftWrist : BodyJointType.rightWrist], isNewFrame, frameTime);
+        rightShoulderJoint.ApplyFilter(trackedHuman.body.Joints[BodyJointType.rightShoulder], isNewFrame, frameTime);
+        rightElbowJoint.ApplyFilter(trackedHuman.body.Joints[BodyJointType.rightElbow], isNewFrame, frameTime);
+        rightWristJoint.ApplyFilter(trackedHuman.body.Joints[BodyJointType.rightWrist], isNewFrame, frameTime);
 
 		// Left leg
-		leftHipJoint.ApplyFilter(trackedHuman.body.Joints[invert ? BodyJointType.rightHip : BodyJointType.leftHip], isNewFrame, frameTime);
-		leftKneeJoint.ApplyFilter(trackedHuman.body.Joints[invert ? BodyJointType.rightKnee : BodyJointType.leftKnee], isNewFrame, frameTime);
-		leftAnkleJoint.ApplyFilter(trackedHuman.body.Joints[invert ? BodyJointType.rightAnkle : BodyJointType.leftAnkle], isNewFrame, frameTime);
+		leftHipJoint.ApplyFilter(trackedHuman.body.Joints[BodyJointType.leftHip], isNewFrame, frameTime);
+		leftKneeJoint.ApplyFilter(trackedHuman.body.Joints[BodyJointType.leftKnee], isNewFrame, frameTime);
+		leftAnkleJoint.ApplyFilter(trackedHuman.body.Joints[BodyJointType.leftAnkle], isNewFrame, frameTime);
 
 		
 		// Right leg
-		rightHipJoint.ApplyFilter(trackedHuman.body.Joints[invert ? BodyJointType.leftHip : BodyJointType.rightHip], isNewFrame, frameTime);
-		rightKneeJoint.ApplyFilter(trackedHuman.body.Joints[invert ? BodyJointType.leftKnee : BodyJointType.rightKnee], isNewFrame, frameTime);
-		rightAnkleJoint.ApplyFilter(trackedHuman.body.Joints[invert ? BodyJointType.leftAnkle : BodyJointType.rightAnkle], isNewFrame, frameTime);
+		rightHipJoint.ApplyFilter(trackedHuman.body.Joints[BodyJointType.rightHip], isNewFrame, frameTime);
+		rightKneeJoint.ApplyFilter(trackedHuman.body.Joints[BodyJointType.rightKnee], isNewFrame, frameTime);
+		rightAnkleJoint.ApplyFilter(trackedHuman.body.Joints[BodyJointType.rightAnkle], isNewFrame, frameTime);
 	}
 
 	/// <summary>

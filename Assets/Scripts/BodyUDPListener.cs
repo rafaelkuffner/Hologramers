@@ -10,6 +10,8 @@ public class BodyUDPListener : MonoBehaviour
 {
 	public static string NoneMessage = "0";
 
+    public bool isLocal;
+
 	public int port;
 	private IPEndPoint ip;
 
@@ -17,8 +19,14 @@ public class BodyUDPListener : MonoBehaviour
     private List<string> stringsToParse;
 
     void Start()
-    { 
-		UDPRestart();
+    {
+        if (isLocal)
+            port = TrackerProperties.Instance.Local_trackerBroadcastPort;
+        else { 
+            port = TrackerProperties.Instance.Remote_trackerBroadcastPort;
+            this.gameObject.transform.parent = GameObject.Find("RemoteOrigin").transform;
+        }
+        UDPRestart();
 	}
 
 	void Update()

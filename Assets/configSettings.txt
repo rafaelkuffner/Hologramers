@@ -1,3 +1,5 @@
 %Config File created in 2016-12-14 16:10:47
-udp.listenport=5003
-udp.trackerport=5001
+remote.trackerBroadcastPort=5002
+remote.trackerListenPort=5003
+local.avatarReceivePort=5114
+local.trackerBroadcastPort=5112

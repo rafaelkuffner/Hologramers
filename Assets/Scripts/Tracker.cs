@@ -13,24 +13,32 @@ public class Tracker : MonoBehaviour
 
 	private Dictionary<string, PointCloudDepth> _clouds;
     private Dictionary<string, GameObject> _cloudGameObjects;
-    private TrackerClient _trackerClient;
     private GameObject _origin;
+    private GameObject _trackercharLocal;
+    private GameObject _trackercharRemote;
+    private TrackerClient _trackerClientRemote;
+    private TrackerClient _trackerClientLocal;
 
     void Awake ()
 	{
         Debug.Log("Hello Tracker");
 		_clouds = new Dictionary<string, PointCloudDepth> ();
         _cloudGameObjects = new Dictionary<string, GameObject>();
-        _loadConfig ();
-        _trackerClient = null;
+        resetListening();
+        _trackerClientRemote = null;
+        _trackerClientLocal = null;
+        _trackercharRemote = null;
 
         UdpClient udp = new UdpClient();
-        string message = AvatarMessage.createRequestMessage(1, TrackerProperties.Instance.listenPort);
+        string message = AvatarMessage.createRequestMessage(1, TrackerProperties.Instance.Local_avatarReceivePort);
         byte[] data = Encoding.UTF8.GetBytes(message);
-        IPEndPoint remoteEndPoint = new IPEndPoint(IPAddress.Broadcast, TrackerProperties.Instance.trackerPort);
-        Debug.Log("Sent request to port" + TrackerProperties.Instance.trackerPort + " with content " + message); 
+        IPEndPoint remoteEndPoint = new IPEndPoint(IPAddress.Broadcast, TrackerProperties.Instance.Remote_trackerListenPort);
+        Debug.Log("Sent request to port" + TrackerProperties.Instance.Remote_trackerListenPort + " with content " + message); 
         udp.Send(data, data.Length, remoteEndPoint);
-        _origin = GameObject.Find("Origin");
+        _origin = GameObject.Find("RemoteOrigin");
+        _trackercharRemote = GameObject.Find("Trackerchar Remote");
+        _trackercharLocal = GameObject.Find("Trackerchar");
+
     }
 
 
@@ -47,22 +55,7 @@ public class Tracker : MonoBehaviour
         }
     }
 
-    private void _loadConfig ()
-	{
-		string filePath = Application.dataPath + "/" + TrackerProperties.Instance.configFilename;
-
-		string port = ConfigProperties.load (filePath, "udp.listenport");
-		if (port != "") {
-			TrackerProperties.Instance.listenPort = int.Parse (port);
-		}
-		resetListening ();
-
-        port = ConfigProperties.load(filePath, "udp.trackerport");
-        if (port != "")
-        {
-            TrackerProperties.Instance.trackerPort = int.Parse(port);
-        }
-    }
+  
     
 	public void resetListening ()
 	{
@@ -75,18 +68,18 @@ public class Tracker : MonoBehaviour
 			s.hide ();
 		}
 		UdpClient udp = new UdpClient ();
-		string message = CloudMessage.createRequestMessage (2,Network.player.ipAddress, TrackerProperties.Instance.listenPort); 
+		string message = CloudMessage.createRequestMessage (2,Network.player.ipAddress, TrackerProperties.Instance.Local_avatarReceivePort); 
 		byte[] data = Encoding.UTF8.GetBytes(message);
-		IPEndPoint remoteEndPoint = new IPEndPoint(IPAddress.Broadcast, TrackerProperties.Instance.listenPort + 1);
+		IPEndPoint remoteEndPoint = new IPEndPoint(IPAddress.Broadcast, TrackerProperties.Instance.Remote_trackerListenPort);
 		udp.Send(data, data.Length, remoteEndPoint);
 	}
 
 	public void broadCastCloudRequests (bool continuous)
 	{
 		UdpClient udp = new UdpClient ();
-		string message = CloudMessage.createRequestMessage (continuous ? 1 : 0, Network.player.ipAddress, TrackerProperties.Instance.listenPort); 
+		string message = CloudMessage.createRequestMessage (continuous ? 1 : 0, Network.player.ipAddress, TrackerProperties.Instance.Local_avatarReceivePort); 
 		byte[] data = Encoding.UTF8.GetBytes (message);
-		IPEndPoint remoteEndPoint = new IPEndPoint (IPAddress.Broadcast, TrackerProperties.Instance.listenPort + 1);
+		IPEndPoint remoteEndPoint = new IPEndPoint (IPAddress.Broadcast, TrackerProperties.Instance.Remote_trackerListenPort);
 		udp.Send (data, data.Length, remoteEndPoint);
 	}
     
@@ -105,7 +98,7 @@ public class Tracker : MonoBehaviour
             float rw = float.Parse(chunks[7]);
 
             GameObject cloudobj = new GameObject(id);
-            cloudobj.transform.parent = _origin.transform;
+            cloudobj.transform.parent = _trackercharRemote.transform;
             cloudobj.transform.localPosition = new Vector3(px,py,pz);
             cloudobj.transform.localRotation = new Quaternion(rx,ry,rz,rw);
             cloudobj.transform.localScale = new Vector3(-1, 1, 1);
@@ -136,11 +129,22 @@ public class Tracker : MonoBehaviour
             _origin.transform.parent = pai;
         }
 
-        if(_trackerClient == null)
+        if(_trackerClientRemote == null)
         {
-            _trackerClient = GameObject.Find("Trackerchar").GetComponent<TrackerClient>();
+            _trackerClientRemote = _trackercharRemote.GetComponent<TrackerClient>();
         }
-        _origin.transform.localPosition = -_trackerClient.spineBase.localPosition;
+        if (_trackerClientLocal == null)
+        {
+            _trackerClientLocal = _trackercharLocal.GetComponent<TrackerClient>();
+        }
+
+        _trackercharRemote.transform.localPosition = new Vector3(-_trackerClientRemote.spineBase.localPosition.x, 0, -_trackerClientRemote.spineBase.localPosition.z);
+        Vector3 fw = _trackerClientRemote.GetForward();
+        fw.y = 0;
+        Vector3 diff = _trackerClientLocal.GetHeadPos() - _origin.transform.position;
+        diff.y = 0;
+        _origin.transform.Rotate(Vector3.Cross(fw, diff), Vector3.Angle(fw, diff));
+
         //foreach (KeyValuePair<string, GameObject> cloudobj in _cloudGameObjects)
         //{
         //    cloudobj.Value.transform.localPosition = pai.position;
