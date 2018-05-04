@@ -13,11 +13,6 @@ public class Tracker : MonoBehaviour
 
 	private Dictionary<string, PointCloudDepth> _clouds;
     private Dictionary<string, GameObject> _cloudGameObjects;
-    private GameObject _origin;
-    private GameObject _trackercharLocal;
-    private GameObject _trackercharRemote;
-    private TrackerClient _trackerClientRemote;
-    private TrackerClient _trackerClientLocal;
 
     void Awake ()
 	{
@@ -25,9 +20,7 @@ public class Tracker : MonoBehaviour
 		_clouds = new Dictionary<string, PointCloudDepth> ();
         _cloudGameObjects = new Dictionary<string, GameObject>();
         resetListening();
-        _trackerClientRemote = null;
-        _trackerClientLocal = null;
-        _trackercharRemote = null;
+        
 
         UdpClient udp = new UdpClient();
         string message = AvatarMessage.createRequestMessage(1, TrackerProperties.Instance.Local_avatarReceivePort);
@@ -35,9 +28,7 @@ public class Tracker : MonoBehaviour
         IPEndPoint remoteEndPoint = new IPEndPoint(IPAddress.Broadcast, TrackerProperties.Instance.Remote_trackerListenPort);
         Debug.Log("Sent request to port" + TrackerProperties.Instance.Remote_trackerListenPort + " with content " + message); 
         udp.Send(data, data.Length, remoteEndPoint);
-        _origin = GameObject.Find("RemoteOrigin");
-        _trackercharRemote = GameObject.Find("Trackerchar Remote");
-        _trackercharLocal = GameObject.Find("Trackerchar");
+       
 
     }
 
@@ -98,7 +89,7 @@ public class Tracker : MonoBehaviour
             float rw = float.Parse(chunks[7]);
 
             GameObject cloudobj = new GameObject(id);
-            cloudobj.transform.parent = _trackercharRemote.transform;
+           
             cloudobj.transform.localPosition = new Vector3(px,py,pz);
             cloudobj.transform.localRotation = new Quaternion(rx,ry,rz,rw);
             cloudobj.transform.localScale = new Vector3(-1, 1, 1);
@@ -108,48 +99,29 @@ public class Tracker : MonoBehaviour
             _cloudGameObjects.Add(id, cloudobj);
 
         }
-        Camera.main.GetComponent<MouseOrbitImproved>().target = _cloudGameObjects.First().Value.transform;
+       // Camera.main.GetComponent<MouseOrbitImproved>().target = _cloudGameObjects.First().Value.transform;
     }
 
-    private void Update()
+    public bool setCloudParentObject(string parentName)
     {
-        if (Input.GetKeyUp(KeyCode.Alpha1))
+        if (_cloudGameObjects.Count == 0) return false;
+        GameObject goRemote = GameObject.Find(parentName);
+        
+        foreach (KeyValuePair<string,GameObject> o in _cloudGameObjects)
         {
-            Transform pai = GameObject.Find("Surface 1").transform;
-            _origin.transform.position = pai.position;
-            _origin.transform.rotation = pai.rotation;
-            _origin.transform.parent = pai;
-           
+            Vector3 p = o.Value.transform.localPosition;
+            Quaternion q = o.Value.transform.localRotation;
+            Vector3 s = o.Value.transform.localScale;
+            o.Value.transform.localPosition = Vector3.zero;
+            o.Value.transform.localRotation = Quaternion.identity;
+            o.Value.transform.localScale = Vector3.one;
+            o.Value.transform.parent = goRemote.transform;
+        
+            o.Value.transform.localPosition = p;
+            o.Value.transform.localRotation = q;
+            o.Value.transform.localScale = s;
         }
-        if (Input.GetKeyUp(KeyCode.Alpha2))
-        {
-            Transform pai = GameObject.Find("Surface 2").transform;
-            _origin.transform.position = pai.position;
-            _origin.transform.rotation = pai.rotation;
-            _origin.transform.parent = pai;
-        }
-
-        if(_trackerClientRemote == null)
-        {
-            _trackerClientRemote = _trackercharRemote.GetComponent<TrackerClient>();
-        }
-        if (_trackerClientLocal == null)
-        {
-            _trackerClientLocal = _trackercharLocal.GetComponent<TrackerClient>();
-        }
-
-        _trackercharRemote.transform.localPosition = new Vector3(-_trackerClientRemote.spineBase.localPosition.x, 0, -_trackerClientRemote.spineBase.localPosition.z);
-        Vector3 fw = _trackerClientRemote.GetForward();
-        fw.y = 0;
-        Vector3 diff = _trackerClientLocal.GetHeadPos() - _origin.transform.position;
-        diff.y = 0;
-        _origin.transform.Rotate(Vector3.Cross(fw, diff), Vector3.Angle(fw, diff));
-
-        //foreach (KeyValuePair<string, GameObject> cloudobj in _cloudGameObjects)
-        //{
-        //    cloudobj.Value.transform.localPosition = pai.position;
-        //    cloudobj.Value.transform.rotation = pai.rotation;
-        //    cloudobj.Value.transform.parent = pai;
-        //}
+        return true;
     }
+
 }

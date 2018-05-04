@@ -6,10 +6,12 @@ public class TrackerProperties : MonoBehaviour {
 
     private static TrackerProperties _singleton;
     private static bool loaded = false;
-    private int remote_trackerBroadcastPort = 55555;
-    private int remote_trackerListenPort = 55556;
+    private int remote_trackerBroadcastPort = 55554;
+    private int remote_trackerListenPort = 55555;
+    private int local_trackerListenPort = 55556;
     private int local_avatarReceivePort = 55557;
     private int local_trackerBroadcastPort = 55558;
+    private int local_surfaceReceivePort = 55559;
 
     public string configFilename = "configSettings.txt";
 
@@ -35,6 +37,18 @@ public class TrackerProperties : MonoBehaviour {
         }
     }
 
+    public int Local_trackerListenPort
+    {
+        get
+        {
+            return local_trackerListenPort;
+        }
+        set
+        {
+            local_trackerListenPort = value;
+        }
+    }
+
     public int Local_avatarReceivePort
     {
         get
@@ -44,6 +58,18 @@ public class TrackerProperties : MonoBehaviour {
         set
         {
             local_avatarReceivePort = value;
+        }
+    }
+
+    public int Local_surfaceReceivePort
+    {
+        get
+        {
+            return local_surfaceReceivePort;
+        }
+        set
+        {
+            local_surfaceReceivePort = value;
         }
     }
 
@@ -104,7 +130,21 @@ public class TrackerProperties : MonoBehaviour {
         {
             this.local_trackerBroadcastPort = int.Parse(port);
         }
-    }
+
+
+        port = ConfigProperties.load(filePath, "local.trackerListenPort");
+        if (port != "")
+        {
+            this.local_trackerListenPort = int.Parse(port);
+        }
+
+        port = ConfigProperties.load(filePath, "local.surfaceReceivePort");
+        if (port != "")
+        {
+            this.local_surfaceReceivePort = int.Parse(port);
+        }
+
+}
     void Start()
     {
         //_singleton = this;

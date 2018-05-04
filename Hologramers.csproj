@@ -268,6 +268,24 @@
     <Reference Include="SyntaxTree.VisualStudio.Unity.Bridge">
       <HintPath>C:/Program Files (x86)/Microsoft Visual Studio Tools for Unity/2015/Editor/SyntaxTree.VisualStudio.Unity.Bridge.dll</HintPath>
     </Reference>
+    <Reference Include="FlatBuffers">
+      <HintPath>Assets/MetaSDK/Plugins/Managed/FlatBuffers.dll</HintPath>
+    </Reference>
+    <Reference Include="FullSerializer">
+      <HintPath>Assets/MetaSDK/Plugins/Managed/FullSerializer.dll</HintPath>
+    </Reference>
+    <Reference Include="MetaAnalytics">
+      <HintPath>Assets/MetaSDK/Plugins/Managed/MetaAnalytics.dll</HintPath>
+    </Reference>
+    <Reference Include="MetaDevMode-CSharp">
+      <HintPath>Assets/MetaSDK/Plugins/Managed/MetaDevMode-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>Assets/MetaSDK/Plugins/Managed/Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="SimpleJSON">
+      <HintPath>Assets/MetaSDK/Plugins/Managed/SimpleJSON.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.Advertisements">
       <HintPath>C:/Users/rafae/AppData/LocalLow/Unity/cache/packages/packages.unity.com/com.unity.ads@2.0.3/UnityEngine.Advertisements.dll</HintPath>
     </Reference>
@@ -288,24 +306,6 @@
     </Reference>
     <Reference Include="UnityEngine.StandardEvents">
       <HintPath>C:/Users/rafae/AppData/LocalLow/Unity/cache/packages/packages.unity.com/com.unity.standardevents@1.0.10/UnityEngine.StandardEvents.dll</HintPath>
-    </Reference>
-    <Reference Include="FlatBuffers">
-      <HintPath>Assets/MetaSDK/Plugins/Managed/FlatBuffers.dll</HintPath>
-    </Reference>
-    <Reference Include="MetaAnalytics">
-      <HintPath>Assets/MetaSDK/Plugins/Managed/MetaAnalytics.dll</HintPath>
-    </Reference>
-    <Reference Include="MetaDevMode-CSharp">
-      <HintPath>Assets/MetaSDK/Plugins/Managed/MetaDevMode-CSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="SimpleJSON">
-      <HintPath>Assets/MetaSDK/Plugins/Managed/SimpleJSON.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>Assets/MetaSDK/Plugins/Managed/Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="FullSerializer">
-      <HintPath>Assets/MetaSDK/Plugins/Managed/FullSerializer.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -710,6 +710,7 @@
     <Compile Include="Assets\Scripts\Body.cs" />
     <Compile Include="Assets\Scripts\BodyUDPListener.cs" />
     <Compile Include="Assets\Scripts\CloudMessage.cs" />
+    <Compile Include="Assets\Scripts\CommonUtils.cs" />
     <Compile Include="Assets\Scripts\ConfigProperties.cs" />
     <Compile Include="Assets\Scripts\Constants.cs" />
     <Compile Include="Assets\Scripts\Decompressor.cs" />
@@ -720,7 +721,9 @@
     <Compile Include="Assets\Scripts\PointCloudDepth.cs" />
     <Compile Include="Assets\Scripts\PointCloudSimple.cs" />
     <Compile Include="Assets\Scripts\PointSmoothing.cs" />
+    <Compile Include="Assets\Scripts\RavatarAdjuster.cs" />
     <Compile Include="Assets\Scripts\RVLDecoder.cs" />
+    <Compile Include="Assets\Scripts\SurfaceRequestListener.cs" />
     <Compile Include="Assets\Scripts\TcpDepthListener.cs" />
     <Compile Include="Assets\Scripts\Tracker.cs" />
     <Compile Include="Assets\Scripts\TrackerClient.cs" />
