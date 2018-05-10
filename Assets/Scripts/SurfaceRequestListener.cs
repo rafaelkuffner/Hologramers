@@ -148,7 +148,7 @@ public class SurfaceRequestListener : MonoBehaviour
     public void ReceiveCallback_LocalSurface(IAsyncResult ar)
     {
         Byte[] receiveBytes = _udpClient_LocalSurface.EndReceive(ar, ref _anyIP_LocalSurface);
-        string result = System.Text.Encoding.UTF8.GetString(receiveBytes);
+        string result = Encoding.UTF8.GetString(receiveBytes);
         print("Received surface message: " + result);
         string[] trackermessage = result.Split(MessageSeparators.L0);
         if (SurfaceMessage.isMessage(result))

@@ -68,6 +68,22 @@ public class UdpListener : MonoBehaviour {
                         AvatarMessage av = new AvatarMessage(splitmsg[1], toProcess);
                         gameObject.GetComponent<Tracker>().processAvatarMessage(av);
                     }
+                    if (Convert.ToChar(toProcess[0]) == 'F')
+                    {
+                        Debug.Log("Remote Forward changed! ");
+                        string stringToParse = Encoding.ASCII.GetString(toProcess);
+                        string[] splitmsg = stringToParse.Split(MessageSeparators.L0);
+                        RemoteForwardMessage rf = new RemoteForwardMessage(splitmsg[1]);
+                        gameObject.GetComponent<RavatarAdjuster>().processForwardMessage(rf);
+                    }
+                    if (Convert.ToChar(toProcess[0]) == 'R')
+                    {
+                        Debug.Log("Remote Forward Request Received! ");
+                        string stringToParse = Encoding.ASCII.GetString(toProcess);
+                        string[] splitmsg = stringToParse.Split(MessageSeparators.L0);
+                        RemoteForwardRequestMessage rf = new RemoteForwardRequestMessage(splitmsg[1]);
+                        gameObject.GetComponent<RavatarAdjuster>().processForwardRequestMessage(rf);
+                    }
                 }
                 _stringsToParse.RemoveAt(0);
             }

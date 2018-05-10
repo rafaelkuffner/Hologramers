@@ -6,8 +6,9 @@ public class TrackerProperties : MonoBehaviour {
 
     private static TrackerProperties _singleton;
     private static bool loaded = false;
-    private int remote_trackerBroadcastPort = 55554;
-    private int remote_trackerListenPort = 55555;
+    private int remote_trackerBroadcastPort = 55553;
+    private int remote_trackerListenPort = 55554;
+    private int remote_forwardListenPort = 55555;
     private int local_trackerListenPort = 55556;
     private int local_avatarReceivePort = 55557;
     private int local_trackerBroadcastPort = 55558;
@@ -34,6 +35,18 @@ public class TrackerProperties : MonoBehaviour {
         set
         {
             remote_trackerListenPort = value;
+        }
+    }
+
+    public int Remote_ForwardListenPort
+    {
+        get
+        {
+            return remote_forwardListenPort;
+        }
+        set
+        {
+            remote_forwardListenPort = value;
         }
     }
 

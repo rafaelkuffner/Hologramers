@@ -722,6 +722,8 @@
     <Compile Include="Assets\Scripts\PointCloudSimple.cs" />
     <Compile Include="Assets\Scripts\PointSmoothing.cs" />
     <Compile Include="Assets\Scripts\RavatarAdjuster.cs" />
+    <Compile Include="Assets\Scripts\RemoteForwardMessage.cs" />
+    <Compile Include="Assets\Scripts\RemoteForwardRequestMessage.cs" />
     <Compile Include="Assets\Scripts\RVLDecoder.cs" />
     <Compile Include="Assets\Scripts\SurfaceRequestListener.cs" />
     <Compile Include="Assets\Scripts\TcpDepthListener.cs" />

@@ -1,7 +1,8 @@
 %Config File created in 2016-12-14 16:10:47
-remote.trackerBroadcastPort=5002
-remote.trackerListenPort=5003
-local.trackerListenPort=5113
-local.avatarReceivePort=5115
-local.trackerBroadcastPort=5112
-local.surfaceReceivePort=5111
+remote.trackerListenPort=4002
+remote.trackerBroadcastPort=4003
+remote.forwardListenPort=4004
+local.trackerListenPort=4112
+local.trackerBroadcastPort=4113
+local.avatarReceivePort=4114
+local.surfaceReceivePort=4115

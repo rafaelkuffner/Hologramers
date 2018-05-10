@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Net.Sockets;
+using System.Net;
 
 public class RavatarAdjuster : MonoBehaviour {
 
@@ -12,6 +14,12 @@ public class RavatarAdjuster : MonoBehaviour {
     private bool _isSetupDone;
     public List<SurfaceRectangle> _surfaces;
     public bool _surfacesLoaded;
+    private Vector3 _remoteForward;
+
+    private UdpClient _udp;
+    private IPEndPoint _forwardRequester;
+    private bool _haveReceivedARemoteForward;
+
     // Use this for initialization
     void Start () {
         _surfacesLoaded = false;
@@ -23,16 +31,49 @@ public class RavatarAdjuster : MonoBehaviour {
         _trackercharRemote = GameObject.Find("Trackerchar Remote");
         _trackercharLocal = GameObject.Find("Trackerchar");
         _surfaces = new List<SurfaceRectangle>();
+        _forwardRequester = null;
+        _haveReceivedARemoteForward = false;
     }
 	
+    public void processForwardRequestMessage(RemoteForwardRequestMessage msg)
+    {
+        _udp = new UdpClient();
+        _forwardRequester = new IPEndPoint(IPAddress.Parse(msg.ipaddress), msg.port);
+    }
+
+    void sendMyForward()
+    {
+        Vector3 forward = _trackerClientRemote.spineBase.localPosition - _origin.transform.position;
+        string message = RemoteForwardMessage.createMessage(forward);
+        byte[] data = System.Text.Encoding.UTF8.GetBytes(message);
+        _udp.Send(data, data.Length, _forwardRequester);
+    }
+
+    void sendForwardRequest()
+    {
+       
+        UdpClient udp = new UdpClient();
+        IPEndPoint remoteEndPoint = new IPEndPoint(IPAddress.Broadcast, TrackerProperties.Instance.Remote_ForwardListenPort);
+        string message = RemoteForwardRequestMessage.createRequestMessage(TrackerProperties.Instance.Local_avatarReceivePort);
+        byte[] data = System.Text.Encoding.UTF8.GetBytes(message);
+        udp.Send(data, data.Length, remoteEndPoint);
+    }
+
+    public void processForwardMessage(RemoteForwardMessage msg)
+    {
+        _remoteForward = msg.forward;
+        _haveReceivedARemoteForward = true;
+    }
+
 	// Update is called once per frame
-	void Update () {
+	void FixedUpdate () {
         if (!_isSetupDone)
         {
-            if(GameObject.Find("Ravatar manager").GetComponent<Tracker>().setCloudParentObject("RemoteOrigin")) { 
-                GetComponent<SurfaceRequestListener>().RequestAndStartReceive();
-                _isSetupDone = true;
-            }
+            if (GetComponent<Tracker>().setCloudParentObject("RemoteOrigin")) { 
+               GetComponent<SurfaceRequestListener>().RequestAndStartReceive();
+               _isSetupDone = true;
+           }
+
         }
 
         if (_surfaces.Count > 0 && !_surfacesLoaded)
@@ -72,12 +113,22 @@ public class RavatarAdjuster : MonoBehaviour {
         }
 
         _trackercharRemote.transform.localPosition = new Vector3(-_trackerClientRemote.spineBase.localPosition.x, 0, -_trackerClientRemote.spineBase.localPosition.z);
-        Vector3 fw = _trackerClientRemote.GetForward();
+        //  Vector3 fw = _trackerClientRemote.GetForward();
+        Vector3 fw = _remoteForward;
         fw.y = 0;
         Vector3 diff = _trackerClientLocal.GetHeadPos() - _origin.transform.position;
         diff.y = 0;
         _origin.transform.Rotate(Vector3.Cross(fw, diff), Vector3.Angle(fw, diff));
 
+        if(_forwardRequester != null)
+        {
+            sendMyForward();
+        }
+
+        if (!_haveReceivedARemoteForward)
+        {
+            sendForwardRequest();
+        }
         //foreach (KeyValuePair<string, GameObject> cloudobj in _cloudGameObjects)
         //{
         //    cloudobj.Value.transform.localPosition = pai.position;
