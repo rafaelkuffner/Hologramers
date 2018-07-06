@@ -70,19 +70,19 @@ public class UdpListener : MonoBehaviour {
                     }
                     if (Convert.ToChar(toProcess[0]) == 'F')
                     {
-                        Debug.Log("Remote Forward changed! ");
+                        Debug.Log("Remote HoloSurface changed! ");
                         string stringToParse = Encoding.ASCII.GetString(toProcess);
                         string[] splitmsg = stringToParse.Split(MessageSeparators.L0);
-                        RemoteForwardMessage rf = new RemoteForwardMessage(splitmsg[1]);
-                        gameObject.GetComponent<RavatarAdjuster>().processForwardMessage(rf);
+                        RemoteHoloSurfaceMessage rf = new RemoteHoloSurfaceMessage(splitmsg[1]);
+                        gameObject.GetComponent<RavatarAdjuster>().processHoloSurfaceMessage(rf);
                     }
                     if (Convert.ToChar(toProcess[0]) == 'R')
                     {
-                        Debug.Log("Remote Forward Request Received! ");
+                        Debug.Log("Remote HoloSurface Request Received! ");
                         string stringToParse = Encoding.ASCII.GetString(toProcess);
                         string[] splitmsg = stringToParse.Split(MessageSeparators.L0);
-                        RemoteForwardRequestMessage rf = new RemoteForwardRequestMessage(splitmsg[1]);
-                        gameObject.GetComponent<RavatarAdjuster>().processForwardRequestMessage(rf);
+                        RemoteHoloSurfaceRequestMessage rf = new RemoteHoloSurfaceRequestMessage(splitmsg[1]);
+                        gameObject.GetComponent<RavatarAdjuster>().processHoloSurfaceRequestMessage(rf);
                     }
                 }
                 _stringsToParse.RemoveAt(0);

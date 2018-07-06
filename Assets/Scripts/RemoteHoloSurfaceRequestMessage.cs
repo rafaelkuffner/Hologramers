@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class RemoteForwardRequestMessage  {
+public class RemoteHoloSurfaceRequestMessage  {
 
     public string ipaddress;
     public int port;
 
-    public RemoteForwardRequestMessage(string message)
+    public RemoteHoloSurfaceRequestMessage(string message)
     {
         string[] tokens = message.Split(MessageSeparators.L1);
         ipaddress = tokens[0]; 
@@ -16,6 +16,6 @@ public class RemoteForwardRequestMessage  {
 
     public static string createRequestMessage(int port)
     {
-        return "RemoteForwardMessage" + MessageSeparators.L0 + Network.player.ipAddress + MessageSeparators.L1 + port;
+        return "RemoteHoloSurfaceMessage" + MessageSeparators.L0 + Network.player.ipAddress + MessageSeparators.L1 + port;
     }
 }

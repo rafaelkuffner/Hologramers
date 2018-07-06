@@ -8,7 +8,7 @@ public class TrackerProperties : MonoBehaviour {
     private static bool loaded = false;
     private int remote_trackerBroadcastPort = 55553;
     private int remote_trackerListenPort = 55554;
-    private int remote_forwardListenPort = 55555;
+    private int remote_holoSurfaceListenPort = 55555;
     private int local_trackerListenPort = 55556;
     private int local_avatarReceivePort = 55557;
     private int local_trackerBroadcastPort = 55558;
@@ -38,15 +38,15 @@ public class TrackerProperties : MonoBehaviour {
         }
     }
 
-    public int Remote_ForwardListenPort
+    public int Remote_HoloSurfaceListenPort
     {
         get
         {
-            return remote_forwardListenPort;
+            return remote_holoSurfaceListenPort;
         }
         set
         {
-            remote_forwardListenPort = value;
+            remote_holoSurfaceListenPort = value;
         }
     }
 

@@ -14,11 +14,11 @@ public class RavatarAdjuster : MonoBehaviour {
     private bool _isSetupDone;
     public List<SurfaceRectangle> _surfaces;
     public bool _surfacesLoaded;
-    private Vector3 _remoteForward;
+    private Vector3 _remoteHoloSurface;
 
     private UdpClient _udp;
-    private IPEndPoint _forwardRequester;
-    private bool _haveReceivedARemoteForward;
+    private IPEndPoint _holoSurfaceRequester;
+    private bool _haveReceivedARemoteHoloSurface;
 
     // Use this for initialization
     void Start () {
@@ -31,38 +31,38 @@ public class RavatarAdjuster : MonoBehaviour {
         _trackercharRemote = GameObject.Find("Trackerchar Remote");
         _trackercharLocal = GameObject.Find("Trackerchar");
         _surfaces = new List<SurfaceRectangle>();
-        _forwardRequester = null;
-        _haveReceivedARemoteForward = false;
+        _holoSurfaceRequester = null;
+        _haveReceivedARemoteHoloSurface = false;
     }
 	
-    public void processForwardRequestMessage(RemoteForwardRequestMessage msg)
+    public void processHoloSurfaceRequestMessage(RemoteHoloSurfaceRequestMessage msg)
     {
         _udp = new UdpClient();
-        _forwardRequester = new IPEndPoint(IPAddress.Parse(msg.ipaddress), msg.port);
+        _holoSurfaceRequester = new IPEndPoint(IPAddress.Parse(msg.ipaddress), msg.port);
     }
 
-    void sendMyForward()
+    void sendMyHoloSurface()
     {
-        Vector3 forward = _trackerClientRemote.spineBase.localPosition - _origin.transform.position;
-        string message = RemoteForwardMessage.createMessage(forward);
+        Vector3 holoSurface = _origin.transform.position;
+        string message = RemoteHoloSurfaceMessage.createMessage(holoSurface);
         byte[] data = System.Text.Encoding.UTF8.GetBytes(message);
-        _udp.Send(data, data.Length, _forwardRequester);
+        _udp.Send(data, data.Length, _holoSurfaceRequester);
     }
 
-    void sendForwardRequest()
+    void sendHoloSurfaceRequest()
     {
        
         UdpClient udp = new UdpClient();
-        IPEndPoint remoteEndPoint = new IPEndPoint(IPAddress.Broadcast, TrackerProperties.Instance.Remote_ForwardListenPort);
-        string message = RemoteForwardRequestMessage.createRequestMessage(TrackerProperties.Instance.Local_avatarReceivePort);
+        IPEndPoint remoteEndPoint = new IPEndPoint(IPAddress.Broadcast, TrackerProperties.Instance.Remote_HoloSurfaceListenPort);
+        string message = RemoteHoloSurfaceRequestMessage.createRequestMessage(TrackerProperties.Instance.Local_avatarReceivePort);
         byte[] data = System.Text.Encoding.UTF8.GetBytes(message);
         udp.Send(data, data.Length, remoteEndPoint);
     }
 
-    public void processForwardMessage(RemoteForwardMessage msg)
+    public void processHoloSurfaceMessage(RemoteHoloSurfaceMessage msg)
     {
-        _remoteForward = msg.forward;
-        _haveReceivedARemoteForward = true;
+        _remoteHoloSurface = msg.holoSurface;
+        _haveReceivedARemoteHoloSurface = true;
     }
 
 	// Update is called once per frame
@@ -111,23 +111,59 @@ public class RavatarAdjuster : MonoBehaviour {
         {
             _trackerClientLocal = _trackercharLocal.GetComponent<TrackerClient>();
         }
-
+        
+        //Calculating forward
+        Vector3 fw = _trackerClientRemote.spineBase.localPosition - _remoteHoloSurface;
+        //Translate it back to center of surface
         _trackercharRemote.transform.localPosition = new Vector3(-_trackerClientRemote.spineBase.localPosition.x, 0, -_trackerClientRemote.spineBase.localPosition.z);
-        //  Vector3 fw = _trackerClientRemote.GetForward();
-        Vector3 fw = _remoteForward;
+        
+        //Adjusting orientation
         fw.y = 0;
         Vector3 diff = _trackerClientLocal.GetHeadPos() - _origin.transform.position;
         diff.y = 0;
         _origin.transform.Rotate(Vector3.Cross(fw, diff), Vector3.Angle(fw, diff));
 
-        if(_forwardRequester != null)
+        ////Adjusting scale
+        //my scale related to the remote guy
+        float ratio = (_trackerClientLocal.GetHeadPos().y - _origin.transform.position.y) / _trackerClientRemote.GetHeadPos().y;
+        //if ratio > 1, means I'm the big guy, i can't upscale, so i do nothing.
+        if (ratio <= 1)
         {
-            sendMyForward();
+            float remoteRatio = (_trackerClientRemote.GetHeadPos().y - _remoteHoloSurface.y) / _trackerClientLocal.GetHeadPos().y;
+            //if his ratio is <= 1, means he can downscale me over there, so its fine
+            //if not....
+            if (remoteRatio > 1)
+            {
+                Vector3 myHeadRemotePos = new Vector3(_remoteHoloSurface.x, _remoteHoloSurface.y + _trackerClientLocal.GetHeadPos().y, _remoteHoloSurface.z);
+                Vector3 hisHeadRemotePos = _trackerClientRemote.GetHeadPos();
+                //Vector from my head to his
+                Vector3 viewVec = hisHeadRemotePos - myHeadRemotePos;
+                hisHeadRemotePos.y = myHeadRemotePos.y;
+                Vector3 planevec = hisHeadRemotePos - myHeadRemotePos;
+                //view angle
+                float angle = Vector3.Angle(planevec, viewVec);
+                //now in my space, i get a vector to the ideal eye to eye head position for him
+                Vector3 hisHeadOrigin = _origin.transform.position;
+                hisHeadOrigin.y = _trackerClientLocal.GetHeadPos().y;
+                Vector3 catetoAdjacente = hisHeadOrigin - _trackerClientLocal.GetHeadPos();
+                float heightDiffLocal = catetoAdjacente.sqrMagnitude* Mathf.Tan(angle);
+                ratio = (_trackerClientLocal.GetHeadPos().y - _origin.transform.position.y+ heightDiffLocal) / hisHeadOrigin.y ;
+            }
+            //use ratio to scale
+            _origin.transform.localScale = new Vector3(ratio, ratio, ratio);
         }
 
-        if (!_haveReceivedARemoteForward)
+
+
+
+        if(_holoSurfaceRequester != null)
         {
-            sendForwardRequest();
+            sendMyHoloSurface();
+        }
+
+        if (!_haveReceivedARemoteHoloSurface)
+        {
+            sendHoloSurfaceRequest();
         }
         //foreach (KeyValuePair<string, GameObject> cloudobj in _cloudGameObjects)
         //{

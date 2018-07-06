@@ -68,7 +68,7 @@ public class BodyUDPListener : MonoBehaviour
         stringsToParse = new List<string>();
 		ip = new IPEndPoint(IPAddress.Any, port);
 
-		udpClient = new UdpClient(ip);
+        udpClient = new UdpClient(ip);
         udpClient.BeginReceive(new AsyncCallback(this.ReceiveCallback), null);
 
 		UnityEngine.Debug.Log("[BodyUDPListener]: Receiving body data in port: " + port);
