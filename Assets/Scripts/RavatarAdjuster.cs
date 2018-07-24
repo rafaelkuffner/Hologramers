@@ -33,6 +33,13 @@ public class RavatarAdjuster : MonoBehaviour {
         _surfaces = new List<SurfaceRectangle>();
         _holoSurfaceRequester = null;
         _haveReceivedARemoteHoloSurface = false;
+
+        //Added here so meta doesn't mess with them
+        gameObject.AddComponent<TcpDepthListener>();
+        gameObject.AddComponent<UdpListener>();
+        gameObject.AddComponent<SurfaceRequestListener>();
+        gameObject.AddComponent<Tracker>();
+
     }
 	
     public void processHoloSurfaceRequestMessage(RemoteHoloSurfaceRequestMessage msg)
@@ -69,6 +76,7 @@ public class RavatarAdjuster : MonoBehaviour {
 	void FixedUpdate () {
         if (!_isSetupDone)
         {
+
             if (GetComponent<Tracker>().setCloudParentObject("RemoteOrigin")) { 
                GetComponent<SurfaceRequestListener>().RequestAndStartReceive();
                _isSetupDone = true;
@@ -82,11 +90,17 @@ public class RavatarAdjuster : MonoBehaviour {
             {
                 GameObject localScreenCenter = new GameObject(sr._name);
                 localScreenCenter.transform.position = sr.Center;
-                localScreenCenter.transform.rotation = sr.Perpendicular;
+                localScreenCenter.transform.rotation = Quaternion.identity;
                 sr.CenterGameObject = localScreenCenter;
             }
             _surfacesLoaded = true;
+            //set 1 as default right away
+            Transform pai = _surfaces[0].CenterGameObject.transform;
+            _origin.transform.position = pai.position;
+            _origin.transform.rotation = pai.rotation;
+            _origin.transform.parent = pai;
         }
+
         if (Input.GetKeyUp(KeyCode.Alpha1))
         {
             Transform pai = _surfaces[0].CenterGameObject.transform;
@@ -119,8 +133,9 @@ public class RavatarAdjuster : MonoBehaviour {
         
         //Adjusting orientation
         fw.y = 0;
-        Vector3 diff = _trackerClientLocal.GetHeadPos() - _origin.transform.position;
+        Vector3 diff = _origin.transform.position - _trackerClientLocal.GetHeadPos();
         diff.y = 0;
+        _origin.transform.rotation = Quaternion.identity;
         _origin.transform.Rotate(Vector3.Cross(fw, diff), Vector3.Angle(fw, diff));
 
         ////Adjusting scale
@@ -150,7 +165,9 @@ public class RavatarAdjuster : MonoBehaviour {
                 ratio = (_trackerClientLocal.GetHeadPos().y - _origin.transform.position.y+ heightDiffLocal) / hisHeadOrigin.y ;
             }
             //use ratio to scale
-            _origin.transform.localScale = new Vector3(ratio, ratio, ratio);
+            if(!float.IsInfinity(ratio) && !float.IsNaN(ratio) && ratio != 0) { 
+                _origin.transform.localScale = new Vector3(ratio, ratio, ratio);
+            }
         }
 
 

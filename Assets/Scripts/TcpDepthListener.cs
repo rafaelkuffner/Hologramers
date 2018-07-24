@@ -62,7 +62,6 @@ public class TcpDepthListener : MonoBehaviour
         myLock = new object();
         //_threads = new List<Thread>();
 
-
         _depthStreams = new List<DepthStream>();
 
         TcpListeningPort = TrackerProperties.Instance.Local_avatarReceivePort;
