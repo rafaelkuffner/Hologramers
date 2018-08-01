@@ -15,7 +15,8 @@ public class TrackerClient : MonoBehaviour
 	private Human trackedHuman;
 	private string trackedHumanId;
 	private Dictionary<string, Human> humans;
-    public Transform bar;
+    public bool local = false;
+
     // Body transforms and joints
 
     //neck
@@ -66,6 +67,8 @@ public class TrackerClient : MonoBehaviour
     Vector3 lastTrackerForward;
     Vector3 lastCameraForward;
 
+    
+    public float dummyHeight = 1.75f;
 
 	void Start()
 	{
@@ -100,29 +103,31 @@ public class TrackerClient : MonoBehaviour
 
 	void Update()
 	{
-        if(trackedHumanId== string.Empty)
+        if (trackedHumanId == string.Empty)
         {
-            
+
             trackedHumanId = GetFirstHuman();
-            if(trackedHumanId != string.Empty) { 
+            if (trackedHumanId != string.Empty)
+            {
                 trackedHuman = humans[trackedHumanId];
                 AdjustAvatarHeight();
             }
 
         }
-        //if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.PageDown) ||Input.GetKeyDown(KeyCode.Joystick1Button1)) // Mouse tap
-        //{
-        //	string currentHumanId = GetHumanIdWithHandUp();
 
-        //	if (humans.ContainsKey(currentHumanId)) 
-        //	{
-        //		trackedHumanId = currentHumanId;
-        //		trackedHuman = humans[trackedHumanId];
+        if ((local && Input.GetKeyDown(KeyCode.L)) || (!local && Input.GetKeyDown(KeyCode.R))) // Mouse tap
+        {
+            string currentHumanId = GetHumanIdWithHandUp();
 
-        //		AdjustAvatarHeight();
-        //		UnityEngine.XR.InputTracking.Recenter();
-        //	}
-        //}
+            if (humans.ContainsKey(currentHumanId))
+            {
+                trackedHumanId = currentHumanId;
+                trackedHuman = humans[trackedHumanId];
+
+                AdjustAvatarHeight();
+                UnityEngine.XR.InputTracking.Recenter();
+            }
+        }
 
         if (humans.ContainsKey(trackedHumanId)) 
 		{
@@ -161,14 +166,19 @@ public class TrackerClient : MonoBehaviour
 	/// Adjusts avatar's height by calculating the 
 	/// ratio between the user and avatar's height.
 	/// </summary>
-	private void AdjustAvatarHeight()
-	{
-		float lowerFootY = Mathf.Min(trackedHuman.body.Joints[BodyJointType.rightFoot].y, trackedHuman.body.Joints[BodyJointType.leftFoot].y);
 
-		float userHeight = (trackedHuman.body.Joints[BodyJointType.head].y + 0.1f) - lowerFootY;
-		float scaleRatio = userHeight / avatarHeight;
-      
-		spineBase.transform.localScale = new Vector3(scaleRatio, scaleRatio, scaleRatio);
+	public void AdjustAvatarHeight()
+	{
+        if (trackedHuman != null) { 
+		    float lowerFootY = Mathf.Min(trackedHuman.body.Joints[BodyJointType.rightFoot].y, trackedHuman.body.Joints[BodyJointType.leftFoot].y);
+		    float userHeight = (trackedHuman.body.Joints[BodyJointType.head].y + 0.1f) - lowerFootY;
+		    float scaleRatio = userHeight / avatarHeight;
+		    spineBase.transform.localScale = new Vector3(scaleRatio, scaleRatio, scaleRatio);
+        }
+        else { 
+            float scaleRatio = dummyHeight / avatarHeight;
+            spineBase.transform.localScale = new Vector3(scaleRatio, scaleRatio, scaleRatio);
+        }
 	}
 
     public Vector3 GetHeadPos()
@@ -177,6 +187,8 @@ public class TrackerClient : MonoBehaviour
             return trackedHuman.body.Joints[BodyJointType.head];
         else return Vector3.zero;
     }
+
+
 
     public Vector3 GetForward()
     {
