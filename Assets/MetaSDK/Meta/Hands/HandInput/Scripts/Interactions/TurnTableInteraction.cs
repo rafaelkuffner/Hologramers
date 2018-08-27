@@ -1,4 +1,4 @@
-﻿// Copyright Â© 2018, Meta Company.  All rights reserved.
+﻿// Copyright © 2018, Meta Company.  All rights reserved.
 // 
 // Redistribution and use of this software (the "Software") in binary form, without modification, is 
 // permitted provided that the following conditions are met:
@@ -6,7 +6,7 @@
 // 1.      Redistributions of the unmodified Software in binary form must reproduce the above 
 //         copyright notice, this list of conditions and the following disclaimer in the 
 //         documentation and/or other materials provided with the distribution.
-// 2.      The name of Meta Company (â€œMetaâ€) may not be used to endorse or promote products derived 
+// 2.      The name of Meta Company (“Meta”) may not be used to endorse or promote products derived 
 //         from this Software without specific prior written permission from Meta.
 // 3.      LIMITATION TO META PLATFORM: Use of the Software is limited to use on or in connection 
 //         with Meta-branded devices or Meta-branded software development kits.  For example, a bona 
@@ -16,7 +16,7 @@
 //         into an application designed or offered for use on a non-Meta-branded device.
 // 
 // For the sake of clarity, the Software may not be redistributed under any circumstances in source 
-// code form, or in the form of modified binary code â€“ and nothing in this License shall be construed 
+// code form, or in the form of modified binary code – and nothing in this License shall be construed 
 // to permit such redistribution.
 // 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, 
@@ -30,7 +30,6 @@
 using Meta.HandInput;
 using System.Linq;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 namespace Meta
 {
@@ -45,24 +44,41 @@ namespace Meta
         private HandTrigger[] _handTriggers;
 
         /// <summary>
-        /// How much to damp rotation
+        /// Rotation damping factor when interacting
         /// </summary>
         [SerializeField]
-        private float _damp = .1f;
+        [Tooltip("Rotation damping factor when hand interacting with target object")]
+        private float _dampValueWhenInteracting = .1f;
+
+        /// <summary>
+        /// Rotation damping factor when not interacting
+        /// </summary>
+        public float DampValueWhenInteracting
+        {
+            get { return _dampValueWhenInteracting; }
+            set { _dampValueWhenInteracting = value; }
+        }
+
+        /// <summary>
+        /// Rotation damping factor when not interacting
+        /// </summary>
+        [SerializeField]
+        [Tooltip("Rotation damping factor when hand not interacting with target object; for example, 0.1 stops quickly and 0.01 spins for a while")]
+        private float _dampValueWhenNotInteracting = .05f;
+
+        /// <summary>
+        /// Whether to damp the rotation when the hand is not interacting
+        /// </summary>
+        public float DampValueWhenNotInteracting
+        {
+            get { return _dampValueWhenNotInteracting; }
+            set { _dampValueWhenNotInteracting = value; }
+        }
 
         private HandFeature _handFeature;
         private float _deltaAngle;
         private float _priorHandFeatureAngle;
         private float _velocity;
-
-        /// <summary>
-        /// How much to damp rotation
-        /// </summary>
-        public float Damp
-        {
-            get { return _damp; }
-            set { _damp = value; }
-        }
 
         void Start()
         {
@@ -78,16 +94,18 @@ namespace Meta
                     handTrigger.HandFeatureExitEvent.AddListener(OnHandFeatureExit);
                 }
             }
-
         }
 
         void Update()
         {
             transform.Rotate(0f, _deltaAngle, 0f);
+
             if (_handFeature == null)
             {
-                _deltaAngle = Mathf.SmoothStep(_deltaAngle, 0f, .1f);
-
+                _deltaAngle = Mathf.SmoothStep(_deltaAngle, 0f, _dampValueWhenNotInteracting);
+            }
+            else
+            {
                 Manipulate();
             }
         }
@@ -101,7 +119,6 @@ namespace Meta
             }
         }
 
-
         public void OnHandFeatureExit<T>(T handFeature) where T : HandFeature
         {
             if (handFeature is TopHandFeature && _handFeature == handFeature)
@@ -110,7 +127,6 @@ namespace Meta
                 Disengage();
             }
         }
-
 
         public void Engage()
         {
@@ -126,7 +142,7 @@ namespace Meta
             //times when the hand is sitting still right after going off screen from the buffered GrabbingFeature.IsValid
             //returning true while the hand is not actually updating.
             float currentHandFeatureAngle = Mathf.SmoothDampAngle(_priorHandFeatureAngle, HandFeatureAngle(),
-                ref _velocity, _damp);
+                ref _velocity, _dampValueWhenInteracting);
             _deltaAngle = Mathf.DeltaAngle(_priorHandFeatureAngle, currentHandFeatureAngle);
             _priorHandFeatureAngle = currentHandFeatureAngle;
         }

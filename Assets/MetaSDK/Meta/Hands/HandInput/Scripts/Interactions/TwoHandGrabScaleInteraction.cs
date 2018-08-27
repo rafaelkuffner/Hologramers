@@ -1,4 +1,4 @@
-﻿// Copyright Â© 2018, Meta Company.  All rights reserved.
+﻿// Copyright © 2018, Meta Company.  All rights reserved.
 // 
 // Redistribution and use of this software (the "Software") in binary form, without modification, is 
 // permitted provided that the following conditions are met:
@@ -6,7 +6,7 @@
 // 1.      Redistributions of the unmodified Software in binary form must reproduce the above 
 //         copyright notice, this list of conditions and the following disclaimer in the 
 //         documentation and/or other materials provided with the distribution.
-// 2.      The name of Meta Company (â€œMetaâ€) may not be used to endorse or promote products derived 
+// 2.      The name of Meta Company (“Meta”) may not be used to endorse or promote products derived 
 //         from this Software without specific prior written permission from Meta.
 // 3.      LIMITATION TO META PLATFORM: Use of the Software is limited to use on or in connection 
 //         with Meta-branded devices or Meta-branded software development kits.  For example, a bona 
@@ -16,7 +16,7 @@
 //         into an application designed or offered for use on a non-Meta-branded device.
 // 
 // For the sake of clarity, the Software may not be redistributed under any circumstances in source 
-// code form, or in the form of modified binary code â€“ and nothing in this License shall be construed 
+// code form, or in the form of modified binary code – and nothing in this License shall be construed 
 // to permit such redistribution.
 // 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, 
@@ -50,7 +50,22 @@ namespace Meta
         [SerializeField]
         private Vector2 _maxSize = new Vector2(2, 2);
 
+        /// <summary>
+        /// Whether to size delta for the TargetTransform should be changed. If false, the local scale will be used.
+        /// </summary>
+        [SerializeField]
+        private bool _scaleSizeDelta = false;
+
+        [SerializeField]
+        private Vector3UnityEvent _scaleChanged = new Vector3UnityEvent();
+
+        [Tooltip("Make objects scale exponentially using a gamma scale power rather than linearly")]
+        [SerializeField]
+        private bool _exponentialScaling = false;
+
         private float _priorDistance;
+        private RectTransform _rectTransform;
+        private const float _gammaScalePower = 1.4f;
 
         /// <summary>
         /// Minimum scale
@@ -70,22 +85,22 @@ namespace Meta
             set { _maxSize = value; }
         }
 
-        protected override void Awake()
+        public Vector3UnityEvent ScaleChanged
         {
-            base.Awake();
+            get { return _scaleChanged; }
         }
 
         protected override void Engage()
         {
             _priorDistance = Vector3.Distance(FirstGrabbingHand.transform.position,
-                                                    SecondGrabbingHand.transform.position);
-            SetIsKinematic(true);
+                                              SecondGrabbingHand.transform.position);
+            PrepareRigidbodyForInteraction();
             base.Engage();
         }
 
         protected override void Disengage()
         {
-            SetIsKinematic(false);
+            RestoreRigidbodySettingsAfterInteraction();
             base.Disengage();
         }
 
@@ -95,12 +110,17 @@ namespace Meta
             Vector3 offset = TargetTransform.position - center;
 
             float currentDistance = Vector3.Distance(FirstGrabbingHand.transform.position,
-                                                        SecondGrabbingHand.transform.position);
+                                                     SecondGrabbingHand.transform.position);
             float multiplier = currentDistance / _priorDistance;
             multiplier = Mathf.Clamp(multiplier, .5f, 1.5f);
+            if (_exponentialScaling)
+            {
+                multiplier = Mathf.Pow(multiplier, _gammaScalePower);
+            }
+
 
             RectTransform rectTransform = TargetTransform as RectTransform;
-            if (rectTransform != null)
+            if (rectTransform != null && _scaleSizeDelta)
             {
                 Vector2 newSize = rectTransform.sizeDelta * multiplier;
                 if (newSize.IsNaN())
@@ -110,6 +130,7 @@ namespace Meta
                 if (newSize.x < _maxSize.x && newSize.y < _maxSize.y && newSize.x > _minSize.x && newSize.y > _minSize.y)
                 {
                     rectTransform.sizeDelta = newSize;
+                    OnScaleChanged(newSize);
                     Move(center + (offset * multiplier));
                 }
             }
@@ -123,12 +144,17 @@ namespace Meta
                 if (newScale.x < _maxSize.x && newScale.y < _maxSize.y && newScale.x > _minSize.x && newScale.y > _minSize.y)
                 {
                     TargetTransform.localScale = newScale;
+                    OnScaleChanged(newScale);
                     Move(center + (offset * multiplier));
                 }
-                TargetTransform.localScale = newScale;
             }
 
             _priorDistance = currentDistance;
+        }
+
+        private void OnScaleChanged(Vector3 scale)
+        {
+            _scaleChanged.Invoke(scale);
         }
     }
 }

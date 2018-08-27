@@ -1,4 +1,4 @@
-﻿// Copyright Â© 2018, Meta Company.  All rights reserved.
+﻿// Copyright © 2018, Meta Company.  All rights reserved.
 // 
 // Redistribution and use of this software (the "Software") in source and binary forms, with or 
 // without modification, is permitted provided that the following conditions are met:
@@ -8,7 +8,7 @@
 // 2.      Redistributions in binary form must reproduce the above copyright notice, this list of 
 //         conditions and the following disclaimer in the documentation and/or other materials 
 //         provided with the distribution.
-// 3.      The name of Meta Company (â€œMetaâ€) may not be used to endorse or promote products derived 
+// 3.      The name of Meta Company (“Meta”) may not be used to endorse or promote products derived 
 //         from this software without specific prior written permission from Meta.
 // 4.      LIMITATION TO META PLATFORM: Use of the Software and of any and all libraries (or other 
 //         software) incorporating the Software (in source or binary form) is limited to use on or 
@@ -27,6 +27,7 @@
 // LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using UnityEngine;
+using Meta.Interop.Buttons;
 
 namespace Meta.Buttons
 {
@@ -50,7 +51,7 @@ namespace Meta.Buttons
         /// Process the Meta Button Event
         /// </summary>
         /// <param name="button">Button Message</param>
-        public override void OnMetaButtonEvent(IMetaButton button)
+        public override void OnMetaButtonEvent(MetaButton button)
         {
             Color targetColor = Color.white;
             switch (button.State)

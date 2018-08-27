@@ -1,4 +1,4 @@
-﻿// Copyright Â© 2018, Meta Company.  All rights reserved.
+﻿// Copyright © 2018, Meta Company.  All rights reserved.
 // 
 // Redistribution and use of this software (the "Software") in binary form, without modification, is 
 // permitted provided that the following conditions are met:
@@ -6,7 +6,7 @@
 // 1.      Redistributions of the unmodified Software in binary form must reproduce the above 
 //         copyright notice, this list of conditions and the following disclaimer in the 
 //         documentation and/or other materials provided with the distribution.
-// 2.      The name of Meta Company (â€œMetaâ€) may not be used to endorse or promote products derived 
+// 2.      The name of Meta Company (“Meta”) may not be used to endorse or promote products derived 
 //         from this Software without specific prior written permission from Meta.
 // 3.      LIMITATION TO META PLATFORM: Use of the Software is limited to use on or in connection 
 //         with Meta-branded devices or Meta-branded software development kits.  For example, a bona 
@@ -16,7 +16,7 @@
 //         into an application designed or offered for use on a non-Meta-branded device.
 // 
 // For the sake of clarity, the Software may not be redistributed under any circumstances in source 
-// code form, or in the form of modified binary code â€“ and nothing in this License shall be construed 
+// code form, or in the form of modified binary code – and nothing in this License shall be construed 
 // to permit such redistribution.
 // 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, 
@@ -95,7 +95,7 @@ namespace Meta.SlamUI
         {
             _centerEye = metaContext.Get<IEventCamera>().EventCameraRef.transform;
             // using find object because MetaLocalizationSettings sets the localizer only on Start instead of Awake
-            // _localizer = metaContext.Get<MetaLocalization>().GetLocalizer() as SlamLocalizer;
+            // _eventProvider = metaContext.Get<MetaLocalization>().GetLocalizer() as SlamEventProvider;
             _localizer = FindObjectOfType<SlamLocalizer>();
 
             // aligning UI with user's sight
@@ -213,8 +213,6 @@ namespace Meta.SlamUI
             }           
         }
 
-
-
         private IEnumerator TimeOutCalibrationFail(float secondsToWait)
         {
             yield return new WaitForSeconds(secondsToWait);
@@ -235,9 +233,9 @@ namespace Meta.SlamUI
 
         private IEnumerator DetectSensorsReady()
         {
-            if (_localizer != null && _localizer.SlamFeedback != null)
+            if (_localizer != null)
             {
-                while (!(_localizer.SlamFeedback.CameraReady))
+                while (!(_localizer.SensorsReady()))
                 {
                     yield return null;
                 }
@@ -247,13 +245,12 @@ namespace Meta.SlamUI
 
         private bool DetectHoldStillStage()
         {
-            SlamFeedback feedback = _localizer.SlamFeedback;
-            return feedback.TrackingReady && feedback.CameraReady && feedback.scale_quality_percent >= 100;
+            return _localizer.ShouldHoldStill();
         }
 
         private bool DetectCalibratedStage()
         {
-            return _localizer.SlamFeedback.FilterReady;
+            return _localizer.IsTracking();
         }
 
         private bool ApproximatelyWithThreshold(float a, float b)

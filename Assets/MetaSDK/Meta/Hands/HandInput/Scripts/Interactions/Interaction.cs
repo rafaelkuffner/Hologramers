@@ -1,4 +1,4 @@
-﻿// Copyright Â© 2018, Meta Company.  All rights reserved.
+﻿// Copyright © 2018, Meta Company.  All rights reserved.
 // 
 // Redistribution and use of this software (the "Software") in binary form, without modification, is 
 // permitted provided that the following conditions are met:
@@ -6,7 +6,7 @@
 // 1.      Redistributions of the unmodified Software in binary form must reproduce the above 
 //         copyright notice, this list of conditions and the following disclaimer in the 
 //         documentation and/or other materials provided with the distribution.
-// 2.      The name of Meta Company (â€œMetaâ€) may not be used to endorse or promote products derived 
+// 2.      The name of Meta Company (“Meta”) may not be used to endorse or promote products derived 
 //         from this Software without specific prior written permission from Meta.
 // 3.      LIMITATION TO META PLATFORM: Use of the Software is limited to use on or in connection 
 //         with Meta-branded devices or Meta-branded software development kits.  For example, a bona 
@@ -16,7 +16,7 @@
 //         into an application designed or offered for use on a non-Meta-branded device.
 // 
 // For the sake of clarity, the Software may not be redistributed under any circumstances in source 
-// code form, or in the form of modified binary code â€“ and nothing in this License shall be construed 
+// code form, or in the form of modified binary code – and nothing in this License shall be construed 
 // to permit such redistribution.
 // 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, 
@@ -54,8 +54,8 @@ namespace Meta
 
         private InteractionState _state;
         private Rigidbody _rigidbody;
-        private RigidbodyConstraints _initialConstraints;
-        private bool _initialIsKinematic;
+        private RigidbodyConstraints _rigidbodyConstraintsPriorToInteraction;
+        private bool _wasKinematicPriorToInteraction;
         private bool _higherPriorityRunning;
 
         protected bool IsHoveredUpon;
@@ -108,11 +108,6 @@ namespace Meta
         protected virtual void Awake()
         {
             _rigidbody = GetComponent<Rigidbody>();
-            if (_rigidbody != null)
-            {
-                _initialConstraints = _rigidbody.constraints;
-                _initialIsKinematic = _rigidbody.isKinematic;
-            }
         }
 
         protected virtual void Update()
@@ -128,15 +123,12 @@ namespace Meta
         /// </summary>
         public void OnGrabEngaged(Hand grabbingHand)
         {
-            if (enabled) 
+            if (enabled)
             {
                 // -- Record grabbing hand
                 GrabbingHands.Add(grabbingHand.Palm);
 
-                if (CanEngage(grabbingHand) && !HigherPriorityRunning)
-                {
-                    OnEngaged(grabbingHand);
-                }
+                CheckAndEngage(grabbingHand);
             }
         }
 
@@ -148,12 +140,12 @@ namespace Meta
             if (enabled)
             {
                 // -- Ensure this hand is grabbing object in first place
-                if (!GrabbingHands.Contains(GrabbingHands.Find(hand => hand.Hand == releasingHand))) return;
-
-                if (CanDisengage(releasingHand) || HigherPriorityRunning)
+                if (!GrabbingHands.Contains(GrabbingHands.Find(hand => hand.Hand == releasingHand)))
                 {
-                    OnDisengaged(releasingHand);
+                    return;
                 }
+
+                CheckAndDisengage(releasingHand);
 
                 // -- Remove Grabbing Hand
                 GrabbingHands.Remove(GrabbingHands.Find(hand => hand.Hand == releasingHand));
@@ -174,6 +166,8 @@ namespace Meta
                 var wasHoveredUpon = IsHoveredUpon;
                 IsHoveredUpon = HoveringHands.Count != 0;
 
+                CheckAndEngage(hand);
+
                 // -- Invoke hover state event
                 if (!wasHoveredUpon && IsHoveredUpon && _events.HoverStart != null)
                 {
@@ -190,7 +184,12 @@ namespace Meta
             if (enabled)
             {
                 // -- Ensure this hand is grabbing object in first place
-                if (!HoveringHands.Contains(HoveringHands.Find(handCenter => handCenter.Hand == hand))) return;
+                if (!HoveringHands.Contains(HoveringHands.Find(handCenter => handCenter.Hand == hand)))
+                {
+                    return;
+                }
+
+                CheckAndDisengage(hand);
 
                 // -- Remove Hovering Hand
                 HoveringHands.Remove(hand.Palm);
@@ -204,6 +203,34 @@ namespace Meta
                 {
                     _events.HoverEnd.Invoke(new MetaInteractionData(null, hand.Palm));
                 }
+            }
+        }
+
+        /// <summary>
+        /// Refreshes the interaction to work with parameters that could change.
+        /// </summary>
+        internal void RefreshInteraction()
+        {
+            if (_state == InteractionState.On)
+            {
+                Disengage();
+                Engage();
+            }
+        }
+
+        private void CheckAndEngage(Hand hand)
+        {
+            if (CanEngage(hand) && !HigherPriorityRunning)
+            {
+                OnEngaged(hand);
+            }
+        }
+
+        private void CheckAndDisengage(Hand hand)
+        {
+            if (CanDisengage(hand) || HigherPriorityRunning)
+            {
+                OnDisengaged(hand);
             }
         }
 
@@ -257,54 +284,45 @@ namespace Meta
         protected abstract void Manipulate();
 
         /// <summary>
-        /// Move attached Rigidbody if exists, otherwise will move transform.
+        /// Translate target transform.
         /// </summary>
         protected void Move(Vector3 position)
         {
-            var targetPosition = position + GrabOffset;
-
-            if (_rigidbody == null)
-            {
-                TargetTransform.position = targetPosition;
-            }
-            else
-            {
-                _rigidbody.position = targetPosition;
-            }
+            TargetTransform.position = position + GrabOffset;
         }
 
         /// <summary>
-        /// Rotate attached Rigidbody if exists, otherwise will move transform.
+        /// Rotate target transform.
         /// </summary>
         protected void Rotate(Quaternion rotation)
         {
-            if (_rigidbody == null)
+            TargetTransform.rotation = rotation;
+        }
+
+        /// <summary>
+        /// Set the rigidbody to kinematic and clear its constraints so as not to interfere with interaction translation.
+        /// </summary>
+        protected void PrepareRigidbodyForInteraction()
+        {
+            if (_rigidbody != null)
             {
-                TargetTransform.rotation = rotation;
-            }
-            else
-            {
-                _rigidbody.rotation = rotation;
+                _wasKinematicPriorToInteraction = _rigidbody.isKinematic;
+                _rigidbodyConstraintsPriorToInteraction = _rigidbody.constraints;
+
+                _rigidbody.constraints = RigidbodyConstraints.None;
+                _rigidbody.isKinematic = true;
             }
         }
 
         /// <summary>
-        /// Toggles IsKinematic state if RigidBody is attached.
+        /// Restore the rigidbody's kinematic state and constraints as they were prior to the most recent interaction.
         /// </summary>
-        protected void SetIsKinematic(bool state)
+        protected void RestoreRigidbodySettingsAfterInteraction()
         {
             if (_rigidbody != null)
             {
-                if (state)
-                {
-                    _rigidbody.constraints = RigidbodyConstraints.None;
-                    _rigidbody.isKinematic = true;
-                }
-                else
-                {
-                    _rigidbody.constraints = _initialConstraints;
-                    _rigidbody.isKinematic = _initialIsKinematic;
-                }
+                _rigidbody.isKinematic = _wasKinematicPriorToInteraction;
+                _rigidbody.constraints = _rigidbodyConstraintsPriorToInteraction;
             }
         }
 

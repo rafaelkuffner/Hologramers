@@ -1,4 +1,4 @@
-﻿// Copyright Â© 2018, Meta Company.  All rights reserved.
+﻿// Copyright © 2018, Meta Company.  All rights reserved.
 // 
 // Redistribution and use of this software (the "Software") in binary form, without modification, is 
 // permitted provided that the following conditions are met:
@@ -6,7 +6,7 @@
 // 1.      Redistributions of the unmodified Software in binary form must reproduce the above 
 //         copyright notice, this list of conditions and the following disclaimer in the 
 //         documentation and/or other materials provided with the distribution.
-// 2.      The name of Meta Company (â€œMetaâ€) may not be used to endorse or promote products derived 
+// 2.      The name of Meta Company (“Meta”) may not be used to endorse or promote products derived 
 //         from this Software without specific prior written permission from Meta.
 // 3.      LIMITATION TO META PLATFORM: Use of the Software is limited to use on or in connection 
 //         with Meta-branded devices or Meta-branded software development kits.  For example, a bona 
@@ -16,7 +16,7 @@
 //         into an application designed or offered for use on a non-Meta-branded device.
 // 
 // For the sake of clarity, the Software may not be redistributed under any circumstances in source 
-// code form, or in the form of modified binary code â€“ and nothing in this License shall be construed 
+// code form, or in the form of modified binary code – and nothing in this License shall be construed 
 // to permit such redistribution.
 // 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, 
@@ -33,13 +33,12 @@ using UnityEngine;
 namespace Meta
 {
     /// <summary>
-    /// Interaction to scale model by placing two hands into the model and grabbing.
+    /// Interaction to scale model by placing two hands into the model and moving them together/apart.
     /// </summary>
-    [AddComponentMenu("Meta/Interaction/TwoHandScaleInteraction")]
-    public class TwoHandScaleInteraction : Interaction //TODO make use TwoHandInteraction
+    [AddComponentMenu("Meta/Interaction/Two Hand Scale Interaction")]
+    public class TwoHandScaleInteraction : Interaction
     {
         private const float LimitResizeDamp = .1f;
-
 
         /// <summary>
         /// Minimum scale
@@ -52,25 +51,14 @@ namespace Meta
         /// </summary>
         [SerializeField]
         private float _maxSize = 2f;
-        
+
+        [Tooltip("Make objects scale exponentially using a gamma scale power rather than linearly")]
+        [SerializeField]
+        private bool _exponentialScaling = false;
+
         private float _priorDistance;
         private Vector3 _limitResizeVelocity;
-
-        /// <summary>
-        /// First hand to grab the interaction object
-        /// </summary>
-        protected HandFeature FirstGrabbingHand
-        {
-            get { return GrabbingHands[0].Hand.Palm; }
-        }
-
-        /// <summary>
-        /// Second hand to grab the interaction object
-        /// </summary>
-        protected HandFeature SecondGrabbingHand
-        {
-            get { return GrabbingHands[1].Hand.Palm; }
-        }
+        private const float _gammaScalePower = 1.4f;
 
         /// <summary>
         /// Maximum scale
@@ -88,38 +76,47 @@ namespace Meta
             get { return _minSize; }
         }
 
+        private HandFeature FirstHand
+        {
+            get { return HoveringHands[0].Hand.Palm; }
+        }
+
+        private HandFeature SecondHand
+        {
+            get { return HoveringHands[1].Hand.Palm; }
+        }
+
         protected override void Update()
         {
-            //resize model if past limits
+            base.Update();
+
+            //Resize if past limits
             if (TargetTransform.localScale.x > _maxSize)
             {
                 TargetTransform.localScale = new Vector3(_maxSize, _maxSize, _maxSize);
             }
-            if (State != InteractionState.On)
+            if (State != InteractionState.On && TargetTransform.localScale.x < _minSize)
             {
-                if (TargetTransform.localScale.x < _minSize)
-                {
-                    TargetTransform.localScale = Vector3.SmoothDamp(TargetTransform.localScale,
-                        new Vector3(_minSize, _minSize, _minSize), ref _limitResizeVelocity, LimitResizeDamp);
-                }
+                TargetTransform.localScale = Vector3.SmoothDamp(TargetTransform.localScale,
+                                                                new Vector3(_minSize, _minSize, _minSize), ref _limitResizeVelocity, LimitResizeDamp);
             }
         }
 
         protected override bool CanEngage(Hand hand)
         {
-            //if two hands are grabbing the object
-            return GrabbingHands.Count == 2;
+            //Check if two hands are in the collider for the object.
+            return HoveringHands.Count == 2;
         }
 
         protected override void Engage()
         {
-            _priorDistance = Vector3.Distance(FirstGrabbingHand.Position,
-                                                    SecondGrabbingHand.Position);
+            _priorDistance = Vector3.Distance(FirstHand.transform.position,
+                                              SecondHand.transform.position);
         }
 
         protected override bool CanDisengage(Hand hand)
         {
-            return GrabbingHands.Count > 1 && GrabbingHands.Contains(hand.Palm);
+            return HoveringHands.Count > 1 && HoveringHands.Contains(hand.Palm);
         }
 
         protected override void Disengage()
@@ -127,12 +124,20 @@ namespace Meta
 
         protected override void Manipulate()
         {
-            float currentDistance = Vector3.Distance(FirstGrabbingHand.Position,
-                                                        SecondGrabbingHand.Position);
+            float currentDistance = Vector3.Distance(FirstHand.transform.position,
+                                                     SecondHand.transform.position);
             float multiplier = currentDistance / _priorDistance;
             if (multiplier < 1.5f && multiplier > .5f)
             {
-                TargetTransform.localScale *= multiplier;
+                if(_exponentialScaling)
+                {
+                    TargetTransform.localScale *= Mathf.Pow(multiplier, _gammaScalePower);
+                }
+                else
+                {
+                    TargetTransform.localScale *= multiplier;
+                }
+                
             }
             _priorDistance = currentDistance;
         }

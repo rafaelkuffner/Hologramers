@@ -240,12 +240,12 @@ Prefab:
         type: 2}
       propertyPath: m_TargetTexture
       value: 
-      objectReference: {fileID: 917811979}
+      objectReference: {fileID: 0}
     - target: {fileID: 20000012647723092, guid: 0f29804ebd89fa1409e93097cbff1a1d,
         type: 2}
       propertyPath: m_TargetTexture
       value: 
-      objectReference: {fileID: 1721857188}
+      objectReference: {fileID: 0}
     - target: {fileID: 114000011609312656, guid: 0f29804ebd89fa1409e93097cbff1a1d,
         type: 2}
       propertyPath: onSlamMappingComplete.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
@@ -274,6 +274,16 @@ Prefab:
     - target: {fileID: 114000011609312656, guid: 0f29804ebd89fa1409e93097cbff1a1d,
         type: 2}
       propertyPath: onSlamMappingComplete.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_BoolArgument
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114693783689908506, guid: 0f29804ebd89fa1409e93097cbff1a1d,
+        type: 2}
+      propertyPath: _enable3DWarp
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114693783689908506, guid: 0f29804ebd89fa1409e93097cbff1a1d,
+        type: 2}
+      propertyPath: _enable2DWarp
       value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
@@ -812,30 +822,6 @@ MonoBehaviour:
   _buttonState: 1
   _clip: {fileID: 8300000, guid: 3a748d88081080f48a02fa99e9c62a59, type: 3}
   _source: {fileID: 454798034}
---- !u!84 &917811979
-RenderTexture:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_Name: 
-  m_ImageContentsHash:
-    serializedVersion: 2
-    Hash: 00000000000000000000000000000000
-  m_Width: 2048
-  m_Height: 2048
-  m_AntiAliasing: 4
-  m_DepthFormat: 2
-  m_ColorFormat: 0
-  m_MipMap: 0
-  m_GenerateMips: 0
-  m_SRGB: 0
-  m_TextureSettings:
-    m_FilterMode: 1
-    m_Aniso: 0
-    m_MipBias: 0
-    m_WrapMode: 1
-  m_Dimension: 2
-  m_VolumeDepth: 1
 --- !u!1 &949656710
 GameObject:
   m_ObjectHideFlags: 0
@@ -1182,80 +1168,6 @@ Transform:
   m_Father: {fileID: 2037155940}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &1255447901
-Prefab:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 114000013342654558, guid: a4475e147b98e59469ab06ad348bd9e3,
-        type: 2}
-      propertyPath: _events.OnHandEnter.m_PersistentCalls.m_Calls.Array.size
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000014006638896, guid: a4475e147b98e59469ab06ad348bd9e3, type: 2}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000014006638896, guid: a4475e147b98e59469ab06ad348bd9e3, type: 2}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000014006638896, guid: a4475e147b98e59469ab06ad348bd9e3, type: 2}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000014006638896, guid: a4475e147b98e59469ab06ad348bd9e3, type: 2}
-      propertyPath: m_LocalRotation.x
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000014006638896, guid: a4475e147b98e59469ab06ad348bd9e3, type: 2}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000014006638896, guid: a4475e147b98e59469ab06ad348bd9e3, type: 2}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000014006638896, guid: a4475e147b98e59469ab06ad348bd9e3, type: 2}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000014006638896, guid: a4475e147b98e59469ab06ad348bd9e3, type: 2}
-      propertyPath: m_RootOrder
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 114651389020479522, guid: a4475e147b98e59469ab06ad348bd9e3,
-        type: 2}
-      propertyPath: _rightTemplate
-      value: 
-      objectReference: {fileID: 1000012363582578, guid: 8fec8da56e657794181c21d4d01e2003,
-        type: 2}
-    - target: {fileID: 114651389020479522, guid: a4475e147b98e59469ab06ad348bd9e3,
-        type: 2}
-      propertyPath: _leftTemplate
-      value: 
-      objectReference: {fileID: 1000011904594566, guid: cca3b79942a496742bb678d8685eba24,
-        type: 2}
-    - target: {fileID: 114000013342654558, guid: a4475e147b98e59469ab06ad348bd9e3,
-        type: 2}
-      propertyPath: _events.OnHandEnter.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 114000013342654558, guid: a4475e147b98e59469ab06ad348bd9e3,
-        type: 2}
-      propertyPath: _events.OnHandEnter.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 114000013342654558, guid: a4475e147b98e59469ab06ad348bd9e3,
-        type: 2}
-      propertyPath: _events.OnHandEnter.m_PersistentCalls.m_Calls.Array.data[0].m_Target
-      value: 
-      objectReference: {fileID: 668091094}
-    m_RemovedComponents: []
-  m_ParentPrefab: {fileID: 100100000, guid: a4475e147b98e59469ab06ad348bd9e3, type: 2}
-  m_IsPrefabParent: 0
 --- !u!1 &1353851114
 GameObject:
   m_ObjectHideFlags: 0
@@ -1323,14 +1235,18 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 'Instructions
+  m_Text: '__Instructions__
+
 
     In this example we show how to receive and process button events from the Meta2.
 
-    We implemented three different event systems based on a regular event system.
 
-    This is for the developer convenience, some implementations are more performant
-    than others but harder to use while the less performant is the easiest to use.
+    We implemented three different event systems based on a standard event system.
+
+
+    Note that some implementations are more performant while others are easier to
+    use.
+
 
     Please inspect the objects in this example to learn more.'
 --- !u!222 &1353851117
@@ -1339,30 +1255,6 @@ CanvasRenderer:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1353851114}
---- !u!84 &1721857188
-RenderTexture:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_Name: 
-  m_ImageContentsHash:
-    serializedVersion: 2
-    Hash: 00000000000000000000000000000000
-  m_Width: 2048
-  m_Height: 2048
-  m_AntiAliasing: 4
-  m_DepthFormat: 2
-  m_ColorFormat: 0
-  m_MipMap: 0
-  m_GenerateMips: 0
-  m_SRGB: 0
-  m_TextureSettings:
-    m_FilterMode: 1
-    m_Aniso: 0
-    m_MipBias: 0
-    m_WrapMode: 1
-  m_Dimension: 2
-  m_VolumeDepth: 1
 --- !u!1 &1730468045
 GameObject:
   m_ObjectHideFlags: 0
@@ -1541,7 +1433,7 @@ Transform:
   - {fileID: 1212969969}
   - {fileID: 114881564}
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2042989870
 GameObject:

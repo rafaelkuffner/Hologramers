@@ -304,7 +304,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: This cube contains an InteractionObjectOutlineSettings Component, which
+  m_Text: This cube contains an InteractionObjectOutlineSettings component, which
     is required to achieve this effect.
 --- !u!222 &152401091
 CanvasRenderer:
@@ -471,7 +471,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4000014141714988, guid: f243146bcfb1abb40b5ad4d2ce2f9414, type: 2}
       propertyPath: m_LocalPosition.y
-      value: -0.0774
+      value: -0.2
       objectReference: {fileID: 0}
     - target: {fileID: 4000014141714988, guid: f243146bcfb1abb40b5ad4d2ce2f9414, type: 2}
       propertyPath: m_LocalPosition.z
@@ -545,7 +545,7 @@ GameObject:
   - component: {fileID: 889145977}
   - component: {fileID: 889145976}
   m_Layer: 0
-  m_Name: forth line
+  m_Name: fourth line
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -650,6 +650,16 @@ Prefab:
       propertyPath: m_RootOrder
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 114693783689908506, guid: 0f29804ebd89fa1409e93097cbff1a1d,
+        type: 2}
+      propertyPath: _enable3DWarp
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114693783689908506, guid: 0f29804ebd89fa1409e93097cbff1a1d,
+        type: 2}
+      propertyPath: _enable2DWarp
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 0f29804ebd89fa1409e93097cbff1a1d, type: 2}
   m_IsPrefabParent: 0
@@ -731,7 +741,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4000014141714988, guid: f243146bcfb1abb40b5ad4d2ce2f9414, type: 2}
       propertyPath: m_LocalPosition.y
-      value: -0.0774
+      value: -0.2
       objectReference: {fileID: 0}
     - target: {fileID: 4000014141714988, guid: f243146bcfb1abb40b5ad4d2ce2f9414, type: 2}
       propertyPath: m_LocalPosition.z
@@ -850,7 +860,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0.002, y: -0.0224}
+  m_AnchoredPosition: {x: 0.002, y: -0.08}
   m_SizeDelta: {x: 1600, y: 1200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!20 &1345323438 stripped
@@ -963,7 +973,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 326, y: 121}
+  m_AnchoredPosition: {x: 326, y: -21.05}
   m_SizeDelta: {x: 600, y: 62}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1629626627

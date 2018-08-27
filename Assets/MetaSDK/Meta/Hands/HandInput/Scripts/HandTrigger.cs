@@ -1,4 +1,4 @@
-﻿// Copyright Â© 2018, Meta Company.  All rights reserved.
+﻿// Copyright © 2018, Meta Company.  All rights reserved.
 // 
 // Redistribution and use of this software (the "Software") in binary form, without modification, is 
 // permitted provided that the following conditions are met:
@@ -6,7 +6,7 @@
 // 1.      Redistributions of the unmodified Software in binary form must reproduce the above 
 //         copyright notice, this list of conditions and the following disclaimer in the 
 //         documentation and/or other materials provided with the distribution.
-// 2.      The name of Meta Company (â€œMetaâ€) may not be used to endorse or promote products derived 
+// 2.      The name of Meta Company (“Meta”) may not be used to endorse or promote products derived 
 //         from this Software without specific prior written permission from Meta.
 // 3.      LIMITATION TO META PLATFORM: Use of the Software is limited to use on or in connection 
 //         with Meta-branded devices or Meta-branded software development kits.  For example, a bona 
@@ -16,7 +16,7 @@
 //         into an application designed or offered for use on a non-Meta-branded device.
 // 
 // For the sake of clarity, the Software may not be redistributed under any circumstances in source 
-// code form, or in the form of modified binary code â€“ and nothing in this License shall be construed 
+// code form, or in the form of modified binary code – and nothing in this License shall be construed 
 // to permit such redistribution.
 // 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, 
@@ -39,6 +39,10 @@ namespace Meta.HandInput
     /// </summary>
     public class HandTrigger : MonoBehaviour
     {
+        [Tooltip("Should hand trigger events still fire when this component is disabled?")]
+        [SerializeField]
+        private bool _triggerWhenDisabled = false;
+
         [SerializeField]
         private HandTriggerEvent _twoHandEnterEvent = new HandTriggerEvent();
 
@@ -69,20 +73,11 @@ namespace Meta.HandInput
         [SerializeField]
         private Vector3 _expandOnEntry = new Vector3(1.1f, 1.1f, 1.1f);
 
-        [SerializeField]
-        private bool _showCursor = true;
-
-        [SerializeField]
-        private bool _showCursorTwoHands = true;
-
         private readonly List<HandFeature> _handFeatureList = new List<HandFeature>();
+
         private bool _twoHandsEntered;
         private Vector3 _initialScale;
-
-        public bool ShowCursor
-        {
-            get { return _showCursor || (HandCount == 2 && _showCursorTwoHands); }
-        }
+        private Collider _collider;
 
         /// <summary>
         /// Number of unique HandTypes (left, right) in Trigger.
@@ -91,7 +86,28 @@ namespace Meta.HandInput
         {
             get
             {
-                return _handFeatureList.Count;
+                bool foundLeft = false, foundRight = false;
+
+                foreach (HandFeature handFeature in _handFeatureList)
+                {
+                    switch (handFeature.Hand.HandType)
+                    {
+                        case HandType.Left:
+                            foundLeft = true;
+                            break;
+
+                        case HandType.Right:
+                            foundRight = true;
+                            break;
+                    }
+
+                    if (foundLeft && foundRight)
+                    {
+                        break;
+                    }
+                }
+
+                return Convert.ToInt32(foundLeft) + Convert.ToInt32(foundRight);
             }
         }
 
@@ -153,8 +169,12 @@ namespace Meta.HandInput
 
         private void Awake()
         {
-            HandUtil.SetupCollider(gameObject);
+            _collider = GetComponent<Collider>();
+            SetColliderIsTrigger();
+
             _initialScale = transform.localScale;
+
+            AddSceneExitCheck();
         }
         
         private void Update()
@@ -171,9 +191,14 @@ namespace Meta.HandInput
         
         private void OnTriggerEnter(Collider collider)
         {
+            if (!_triggerWhenDisabled && !enabled)
+            {
+                return;
+            }
+
             HandFeature handFeature = collider.GetComponent<HandFeature>();
 
-            if (handFeature != null && IsAllowedType(handFeature))
+            if (handFeature != null && IsAllowedType(handFeature) && handFeature.gameObject.activeSelf)
             {
                 if (_firstHandFeatureEnterEvent != null && _handFeatureList.Count == 0)
                 {
@@ -200,11 +225,42 @@ namespace Meta.HandInput
 
         private void OnTriggerExit(Collider collider)
         {
+            if (!_triggerWhenDisabled && !enabled)
+            {
+                return;
+            }
+
             HandFeature handFeature = collider.GetComponent<HandFeature>();
 
             if (handFeature != null && IsAllowedType(handFeature))
             {
                 OnHandExit(handFeature);
+            }
+        }
+
+        private void AddSceneExitCheck()
+        {
+            HandsProvider handsProvider = GameObject.Find("MetaHands").GetComponent<HandsProvider>();
+            if (handsProvider != null)
+            {
+                handsProvider.events.OnHandExit.AddListener(OnHandSensorExit);
+            }
+        }
+
+        private void OnHandSensorExit(Hand h)
+        {
+            if (!_triggerWhenDisabled && !enabled)
+            {
+                return;
+            }
+
+            HandFeature[] childHandFeatures = h.gameObject.GetComponentsInChildren<HandFeature>();
+            for (int i = 0; i < childHandFeatures.Length; i++)
+            {
+                if (IsAllowedType(childHandFeatures[i]))
+                {
+                    OnHandExit(childHandFeatures[i]);
+                }
             }
         }
 
@@ -228,12 +284,14 @@ namespace Meta.HandInput
 
         private void OnHandExit(HandFeature handFeature)
         {
+            bool wasInTrigger = false;
+
             if (handFeature != null)
             {
-                _handFeatureList.Remove(handFeature);
+                wasInTrigger = _handFeatureList.Remove(handFeature);
             }
 
-            if (_lastHandFeatureExitEvent != null && HandCount == 0)
+            if (_lastHandFeatureExitEvent != null && HandCount == 0 && wasInTrigger)
             {
                 transform.localScale = _initialScale;
                 _lastHandFeatureExitEvent.Invoke(handFeature);
@@ -272,10 +330,16 @@ namespace Meta.HandInput
 
         private void OnDrawGizmos()
         {
-            //Enforce proper setup in editor
-            HandUtil.SetupCollider(gameObject);
+            // Enforce proper setup in editor
+            SetColliderIsTrigger();
         }
 
-
+        private void SetColliderIsTrigger()
+        {
+            if (_collider != null && !_collider.isTrigger)
+            {
+                _collider.isTrigger = true;
+            }
+        }
     }
 }

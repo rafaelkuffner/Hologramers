@@ -1,4 +1,4 @@
-﻿// Copyright Â© 2018, Meta Company.  All rights reserved.
+﻿// Copyright © 2018, Meta Company.  All rights reserved.
 // 
 // Redistribution and use of this software (the "Software") in binary form, without modification, is 
 // permitted provided that the following conditions are met:
@@ -6,7 +6,7 @@
 // 1.      Redistributions of the unmodified Software in binary form must reproduce the above 
 //         copyright notice, this list of conditions and the following disclaimer in the 
 //         documentation and/or other materials provided with the distribution.
-// 2.      The name of Meta Company (â€œMetaâ€) may not be used to endorse or promote products derived 
+// 2.      The name of Meta Company (“Meta”) may not be used to endorse or promote products derived 
 //         from this Software without specific prior written permission from Meta.
 // 3.      LIMITATION TO META PLATFORM: Use of the Software is limited to use on or in connection 
 //         with Meta-branded devices or Meta-branded software development kits.  For example, a bona 
@@ -16,7 +16,7 @@
 //         into an application designed or offered for use on a non-Meta-branded device.
 // 
 // For the sake of clarity, the Software may not be redistributed under any circumstances in source 
-// code form, or in the form of modified binary code â€“ and nothing in this License shall be construed 
+// code form, or in the form of modified binary code – and nothing in this License shall be construed 
 // to permit such redistribution.
 // 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, 
@@ -27,6 +27,8 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT 
 // LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+using Meta.Plugin;
+using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -36,10 +38,10 @@ namespace Meta
     /// <summary>
     /// Custom Inspector for Meta Compositor
     /// </summary>
-    [CustomEditor(typeof(MetaCompositor))]
+    [CustomEditor(typeof(Plugin.MetaCompositor))]
     public class MetaCompositorCustomInspector : Editor
     {
-        private MetaCompositor _component;
+        private Plugin.MetaCompositor _component;
         private Dictionary<string, SerializedProperty> _fields = new Dictionary<string, SerializedProperty>();
 
         /// <summary>
@@ -54,23 +56,26 @@ namespace Meta
             DrawMember("_leftCam");
             DrawMember("_rightCam");
 
-            DisplayDirectModeMessage();
-            // Time Warp
-            DrawEnableTimeWarp();
-            DrawDebugAddLatency();
-            DrawTimeWarpPredictionTime();
+            DrawEnableWebcam();
 
-            // Late Warp
-            DrawLateWarp();
-            DrawEnableAsyncLateWarp();
-            DrawLateWarpThreshold();
+            // Clipping Planes
+            DrawNearClippingPlane();
+            DrawFarClippingPlane();
+            MaybeDisplayClippingPlanesWarningAndResetButton();
 
-            // Hand Occlusion
             DrawEnableHandOcclusion();
-            DrawTemporalMomentum();
-            DrawFeatherSize();
-            DrawFeatherFalloffExponent();
-            DrawFeatherCutoff();
+
+            DisplayDirectModeMessage();
+
+            // Draw Warp Menus
+            DrawEnable2DWarp();
+            DrawEnable3DWarp();
+
+            //Common warp related attributes
+            DrawWarpPredictionTime();                      
+
+            // Asynchronous Rendering
+            DrawEnableAsynchronousRendering();
 
             // Do not apply changes to serialized fields if we are in Play Mode
             if (Application.isPlaying)
@@ -81,70 +86,85 @@ namespace Meta
             serializedObject.Update();
         }
 
-        /// <summary>
-        /// Check that we have a reference of the Compositor script
-        /// </summary>
-        private void CheckComponent()
+        private void DrawEnableWebcam()
         {
-            if (_component != null)
-                return;
-            _component = target as MetaCompositor;
-        }
-
-        /// <summary>
-        /// Displays an Information Messager regarding TimeWarp and LateWarp.
-        /// </summary>
-        private void DisplayDirectModeMessage()
-        {
-            EditorGUILayout.HelpBox("The following features work only in DirectMode", MessageType.Info);
-        }
-
-        #region TimeWarp
-        /// <summary>
-        /// Draw the Enable TimeWarp field
-        /// </summary>
-        private void DrawEnableTimeWarp()
-        {
-            var property = GetProperty("_enableTimewarp");
-            var oldValue = _component.EnableTimeWarp;
-
+            var property = GetProperty("_enableWebcam");
+            bool oldValue = property.boolValue;
             EditorGUILayout.PropertyField(property);
+            bool newValue = property.boolValue;
+
+            if (!Application.isPlaying)
+                return;
+
+            if (oldValue != newValue)
+            {
+                _component.WebcamEnabled = newValue;
+            }
+        }
+
+        #region Warps
+        /// <summary>
+        /// Draw the Enable 2D Warp field
+        /// </summary>
+        private void DrawEnable2DWarp()
+        {
+            var warp2DEnabled = GetProperty("_enable2DWarp");
+            var oldValue = _component.Enable2DWarp;
+
+            var warp3DEnabled = GetProperty("_enable3DWarp");
+
+            if (warp3DEnabled.boolValue)
+            {
+                warp3DEnabled.boolValue = true;
+                warp2DEnabled.boolValue = false;
+            }
+
+            EditorGUILayout.PropertyField(warp2DEnabled);
 
             if (!Application.isPlaying)
                 return;
 
             // Check for new value
-            var newValue = property.boolValue;
+            var newValue = warp2DEnabled.boolValue;
             if (oldValue != newValue)
-                _component.EnableTimeWarp = newValue;
+                _component.Enable2DWarp = newValue;
         }
 
-        /// <summary>
-        /// Draw the Debug Add Latency field
-        /// </summary>
-        private void DrawDebugAddLatency()
-        {
-            var property = GetProperty("_debugAddLatency");
-            var oldValue = _component.AddLatency;
 
-            EditorGUILayout.PropertyField(property);
+        private void DrawEnable3DWarp()
+        {
+            var warp3DEnabled = GetProperty("_enable3DWarp");
+            var oldValue = _component.Enable3DWarp;
+
+            var warp2DEnabled = GetProperty("_enable2DWarp");
+
+            if (warp2DEnabled.boolValue)
+            {
+                warp3DEnabled.boolValue = false;
+                warp2DEnabled.boolValue = true;
+            }
+
+            EditorGUILayout.PropertyField(warp3DEnabled);
 
             if (!Application.isPlaying)
                 return;
 
             // Check for new value
-            var newValue = property.boolValue;
+            var newValue = warp3DEnabled.boolValue;
             if (oldValue != newValue)
-                _component.AddLatency = newValue;
+            {
+                _component.Enable3DWarp = newValue;
+            }
         }
 
+
         /// <summary>
-        /// Draw the Time Warp Prediction Time field
+        /// Draw the Warp Prediction Time field
         /// </summary>
-        private void DrawTimeWarpPredictionTime()
+        private void DrawWarpPredictionTime()
         {
-            var property = GetProperty("_timeWarpPredictionTime");
-            var oldValue = _component.TimeWarpPredictionTime;
+            var property = GetProperty("_trackingPrediction");
+            var oldValue = _component.Warp2DPredictionTime;
 
             EditorGUILayout.PropertyField(property);
 
@@ -154,65 +174,28 @@ namespace Meta
             // Check for new value
             var newValue = property.floatValue;
             if (oldValue != newValue)
-                _component.TimeWarpPredictionTime = newValue;
+                _component.Warp2DPredictionTime = newValue;
         }
         #endregion
 
-        #region LateWarp
-        /// <summary>
-        /// Draw the Enable Late Warp field
-        /// </summary>
-        private void DrawLateWarp()
-        {
-            var property = GetProperty("_enableLateWarp");
-            var oldValue = _component.EnableLateWarp;
-
-            EditorGUILayout.PropertyField(property);
-
-            if (!Application.isPlaying)
-                return;
-
-            // Check for new value
-            var newValue = property.boolValue;
-            if (oldValue != newValue)
-                _component.EnableLateWarp = newValue;
-        }
-
+        #region AsynchronousRendering
         /// <summary>
         /// Draw the Enable Async Late Warp field
         /// </summary>
-        private void DrawEnableAsyncLateWarp()
+        private void DrawEnableAsynchronousRendering()
         {
-            var enableAsync = GetProperty("_enableAsyncLateWarp");
+            var enableAsync = GetProperty("_enableAsynchronousRendering");
             if (!Application.isPlaying)
             {
                 EditorGUILayout.PropertyField(enableAsync);
             }
             else
             {
-                var content = new GUIContent("Enable Async Late Warp", "Async Latewarp should be set before start of scene");
+                var content = new GUIContent("Enable Async Rendering", "Async Rendering should be set before start of scene");
                 EditorGUILayout.Toggle(content, enableAsync.boolValue);
             }
         }
 
-        /// <summary>
-        /// Draw the Late Warp Threshold field
-        /// </summary>
-        private void DrawLateWarpThreshold()
-        {
-            var property = GetProperty("_lateWarpThreshold");
-            var oldValue = _component.LateWarpThreshold;
-
-            EditorGUILayout.PropertyField(property);
-
-            if (!Application.isPlaying)
-                return;
-
-            // Check for new value
-            var newValue = property.floatValue;
-            if (oldValue != newValue)
-                _component.LateWarpThreshold = newValue;
-        }
         #endregion
 
         #region HandOcclusion
@@ -234,14 +217,16 @@ namespace Meta
             if (oldValue != newValue)
                 _component.EnableHandOcclusion = newValue;
         }
+        #endregion
 
+        #region Clipping Planes
         /// <summary>
-        /// Draw the temporal momentum field
+        /// Draw the near clipping plane field
         /// </summary>
-        private void DrawTemporalMomentum()
+        private void DrawNearClippingPlane()
         {
-            var property = GetProperty("_temporalMomentum");
-            var oldValue = _component.TemporalMomentum;
+            var property = GetProperty("_nearClippingPlane");
+            var oldValue = _component.NearClippingPlane;
 
             EditorGUILayout.PropertyField(property);
 
@@ -251,35 +236,16 @@ namespace Meta
             // Check for new value
             var newValue = property.floatValue;
             if (oldValue != newValue)
-                _component.TemporalMomentum = newValue;
+                _component.NearClippingPlane = newValue;
         }
 
         /// <summary>
-        /// Draw the feather size field
+        /// Draw the far clipping plane field
         /// </summary>
-        private void DrawFeatherSize()
+        private void DrawFarClippingPlane()
         {
-            var property = GetProperty("_featherSize");
-            var oldValue = _component.FeatherSize;
-
-            EditorGUILayout.PropertyField(property);
-
-            if (!Application.isPlaying)
-                return;
-
-            // Check for new value
-            var newValue = property.intValue;
-            if (oldValue != newValue)
-                _component.FeatherSize = newValue;
-        }
-
-        /// <summary>
-        /// Draw the Feather falloff exponent field
-        /// </summary>
-        private void DrawFeatherFalloffExponent()
-        {
-            var property = GetProperty("_featherFalloffExponent");
-            var oldValue = _component.FeatherFalloffExponent;
+            var property = GetProperty("_farClippingPlane");
+            var oldValue = _component.FarClippingPlane;
 
             EditorGUILayout.PropertyField(property);
 
@@ -289,28 +255,44 @@ namespace Meta
             // Check for new value
             var newValue = property.floatValue;
             if (oldValue != newValue)
-                _component.FeatherFalloffExponent = newValue;
+                _component.FarClippingPlane = newValue;
         }
 
-        /// <summary>
-        /// Draw the feather cutoff field
-        /// </summary>
-        private void DrawFeatherCutoff()
+        private void MaybeDisplayClippingPlanesWarningAndResetButton()
         {
-            var property = GetProperty("_featherCutoff");
-            var oldValue = _component.FeatherCutoff;
+            if (_component.NearClippingPlane != Plugin.MetaCompositor.DefaultNearClippingPlane ||
+                _component.FarClippingPlane != Plugin.MetaCompositor.DefaultFarClippingPlane)
+            {
+                EditorGUILayout.HelpBox("Default clipping plane settings overriden. Visual artifacts may occur due to the focal length of the Meta 2's optics.",
+                    MessageType.Warning);
 
-            EditorGUILayout.PropertyField(property);
-
-            if (!Application.isPlaying)
-                return;
-
-            // Check for new value
-            var newValue = property.floatValue;
-            if (oldValue != newValue)
-                _component.FeatherCutoff = newValue;
+                if (GUILayout.Button("Reset Default Clipping Planes"))
+                {
+                    _component.NearClippingPlane = Plugin.MetaCompositor.DefaultNearClippingPlane;
+                    _component.FarClippingPlane = Plugin.MetaCompositor.DefaultFarClippingPlane;
+                }
+            }
         }
         #endregion
+
+        #region Utility
+        /// <summary>
+        /// Check that we have a reference of the Compositor script
+        /// </summary>
+        private void CheckComponent()
+        {
+            if (_component != null)
+                return;
+            _component = target as Plugin.MetaCompositor;
+        }
+
+        /// <summary>
+        /// Displays an Information Messager regarding Extended modes limited support with stabilization warps.
+        /// </summary>
+        private void DisplayDirectModeMessage()
+        {
+            EditorGUILayout.HelpBox("The following features have limited support in Extended Mode", MessageType.Info);
+        }
 
         /// <summary>
         /// Draw the given member of the class in the inspector
@@ -343,5 +325,6 @@ namespace Meta
             // Look for the property
             return _fields[name];
         }
+        #endregion
     }
 }

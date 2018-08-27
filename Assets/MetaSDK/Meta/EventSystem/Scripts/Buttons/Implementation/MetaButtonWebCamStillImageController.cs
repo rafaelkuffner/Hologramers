@@ -1,4 +1,4 @@
-﻿// Copyright Â© 2018, Meta Company.  All rights reserved.
+﻿// Copyright © 2018, Meta Company.  All rights reserved.
 // 
 // Redistribution and use of this software (the "Software") in binary form, without modification, is 
 // permitted provided that the following conditions are met:
@@ -6,7 +6,7 @@
 // 1.      Redistributions of the unmodified Software in binary form must reproduce the above 
 //         copyright notice, this list of conditions and the following disclaimer in the 
 //         documentation and/or other materials provided with the distribution.
-// 2.      The name of Meta Company (â€œMetaâ€) may not be used to endorse or promote products derived 
+// 2.      The name of Meta Company (“Meta”) may not be used to endorse or promote products derived 
 //         from this Software without specific prior written permission from Meta.
 // 3.      LIMITATION TO META PLATFORM: Use of the Software is limited to use on or in connection 
 //         with Meta-branded devices or Meta-branded software development kits.  For example, a bona 
@@ -16,7 +16,7 @@
 //         into an application designed or offered for use on a non-Meta-branded device.
 // 
 // For the sake of clarity, the Software may not be redistributed under any circumstances in source 
-// code form, or in the form of modified binary code â€“ and nothing in this License shall be construed 
+// code form, or in the form of modified binary code – and nothing in this License shall be construed 
 // to permit such redistribution.
 // 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, 
@@ -32,6 +32,8 @@ using System.IO;
 using System.Collections;
 using UnityEngine;
 
+using Meta.Interop.Buttons;
+
 namespace Meta.Buttons
 {
     /// <summary>
@@ -39,7 +41,7 @@ namespace Meta.Buttons
     /// </summary>
     public class MetaButtonWebCamStillImageController : MonoBehaviour, IOnMetaButtonEvent
     {
-        private const string WEBCAM_NAME = "Meta 2 Webcam";
+        private const string WEBCAM_NAME = "Meta2 Webcam + Holographic Overlay";
 
         [SerializeField]
         [Tooltip("(Optional) Target where to render the Webcam feed")]
@@ -50,32 +52,69 @@ namespace Meta.Buttons
         private object _stateObject = new object();
         private FileStream _writer;
         private bool _initializing;
+        
+        /// <summary>
+        /// Delegate for the OnScreenShotComplete event.
+        /// </summary>
+        public delegate void ScreenShotComplete();
 
+        /// <summary>
+        /// An event to fire when the snapshot is complete.  As the snapshot executes over time with a co-routine,
+        /// this will fire at the end of the co-routine. 
+        /// </summary>
+        public event ScreenShotComplete OnScreenShotComplete;
+
+        
+        /// <summary>
+        /// The directory for the screenshot image to be saved. 
+        /// </summary>
+        public string ScreenShotDirectory { get; set; }
+
+        /// <summary>
+        /// Returns an array of RGB24 format pixels from a texture that can be used to populate another texture.
+        /// </summary>
+        public Color[] GetLastCapturedPixels
+        {
+            get { return _texture2d.GetPixels(); }
+        }
         /// <summary>
         /// Initialize the WebCam
         /// </summary>
         private IEnumerator Start()
         {
+            SetDefaultSaveDirectory();
+
             _initializing = true;
             if (!CreateWebCamTexture())
                 yield break;
 
             _webcamTexture.Play();
+            
             yield return new WaitForSeconds(3);
             _webcamTexture.Pause();
             _initializing = false;
         }
 
         /// <summary>
-        /// Process the Meta Button Event
+        /// Upon a Meta button press, initiate a snapshot.  Can call this with null to also take a snapshot.
         /// </summary>
         /// <param name="button">Button Message</param>
-        public void OnMetaButtonEvent(IMetaButton button)
+        public void OnMetaButtonEvent(MetaButton button)
         {
-            if (button.Type != ButtonType.ButtonCamera)
-                return;
-            if (button.State != ButtonState.ButtonShortPress)
-                return;
+            // If we received a button event, ensure it's the correct type of button press.
+            if (button != null)
+            {
+                if (button.Type != ButtonType.ButtonCamera)
+                {
+                    return;
+                }
+
+                if (button.State != ButtonState.ButtonShortPress)
+                {
+                    return;
+                }
+            }
+
             if (!this.enabled)
             {
                 Debug.LogWarning("Script is not enabled");
@@ -131,6 +170,7 @@ namespace Meta.Buttons
                 _targetRenderer.material.mainTexture = _webcamTexture;
             }
             _texture2d = new Texture2D(targetWidth, targetHeight, TextureFormat.RGB24, false);
+            
             return true;
         }
 
@@ -153,9 +193,9 @@ namespace Meta.Buttons
             _webcamTexture.Pause();
 
             // Transfer data to the texture 2D for encoding
-            var webcamPixels = _webcamTexture.GetPixels();
+            var writePixels = _webcamTexture.GetPixels();
             yield return null;
-            _texture2d.SetPixels(webcamPixels);
+            _texture2d.SetPixels(writePixels);
             yield return null;
             _texture2d.Apply();
             yield return null;
@@ -167,6 +207,12 @@ namespace Meta.Buttons
             // Save to file
             _writer = File.Create(GetTargetFileName());
             _writer.BeginWrite(bytes, 0, bytes.Length, OnFileWriteFinished, _stateObject);
+
+            // If we have any methods subscribed to the complete, then invoke.
+            if (OnScreenShotComplete != null)
+            {
+                OnScreenShotComplete.Invoke();
+            }
         }
 
         /// <summary>
@@ -192,7 +238,10 @@ namespace Meta.Buttons
             _webcamTexture.Stop();
         }
 
-        private string GetTargetFileName()
+        /// <summary>
+        /// Sets the default directory for the images to be saved in.
+        /// </summary>
+        private void SetDefaultSaveDirectory()
         {
             // Get root folder
             var root = Environment.GetEnvironmentVariable("META_ROOT", EnvironmentVariableTarget.Process);
@@ -208,9 +257,19 @@ namespace Meta.Buttons
                 Directory.CreateDirectory(path);
             }
 
+            ScreenShotDirectory = path;
+        }
+
+        /// <summary>
+        /// Gets the full path and name of the image to be saved.
+        /// </summary>
+        /// <returns></returns>
+        private string GetTargetFileName()
+        {
+
             // Get filename
-            var fileName = string.Format("Meta Screen Shot {0:yyyy-MM-dd} at {0:HH.mm.ss} PM.png", DateTime.Now);
-            return Path.Combine(path, fileName);
+            var fileName = string.Format("Meta Screen Shot {0:yyyy-MM-dd} at {0:HH.mm.ss}.png", DateTime.Now);
+            return Path.Combine(ScreenShotDirectory, fileName);
         }
     }
 }
