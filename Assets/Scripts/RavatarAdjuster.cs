@@ -145,6 +145,13 @@ public class RavatarAdjuster : MonoBehaviour {
             _origin.transform.rotation = pai.rotation;
             _origin.transform.parent = pai;
         }
+        if (Input.GetKeyUp(KeyCode.Alpha3))
+        {
+            Transform pai = GameObject.Find("RightHand").transform;
+            _origin.transform.position = pai.position;
+            _origin.transform.rotation = pai.rotation;
+            _origin.transform.parent = pai;
+        }
 
         if (_trackerClientRemote == null)
         {

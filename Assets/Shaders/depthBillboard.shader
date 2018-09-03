@@ -1,3 +1,4 @@
+
 // Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
 
 // Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
@@ -93,6 +94,7 @@ Shader "Custom/Depth Billboard"
 							c.a = 0;
 					output.pos =  pos;
 					output.color = c;
+					output.color = float4(0.3*c.r,0.3*c.g,c.b,c.a);
 
 					return output;
 				}
