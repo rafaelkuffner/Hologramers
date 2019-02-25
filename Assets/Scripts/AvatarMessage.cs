@@ -6,7 +6,7 @@ public class AvatarMessage {
 
    public List<string> calibrations;
 
-    public AvatarMessage(string message, byte[] receivedBytes)
+    public AvatarMessage(string message)
     {
         calibrations = new List<string>();
         string[] chunks = message.Split(MessageSeparators.L1);
@@ -19,6 +19,6 @@ public class AvatarMessage {
 
    public static string createRequestMessage(int mode,int port)
     {
-        return "AvatarMessage" + MessageSeparators.L0 + Network.player.ipAddress + MessageSeparators.L1 + (mode) + MessageSeparators.L1 + port;
+        return "AvatarMessage" + MessageSeparators.L0 + IPManager.GetIP(ADDRESSFAM.IPv4) + MessageSeparators.L1 + (mode) + MessageSeparators.L1 + port;
     }
 }

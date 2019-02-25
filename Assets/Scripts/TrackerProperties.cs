@@ -14,7 +14,7 @@ public class TrackerProperties : MonoBehaviour {
     private int local_trackerBroadcastPort = 55558;
     private int local_surfaceReceivePort = 55559;
 
-    private string configFilename = "configSettings.txt";
+    public string configFilename = "configSettings.txt";
 
     public int Remote_trackerBroadcastPort
     {

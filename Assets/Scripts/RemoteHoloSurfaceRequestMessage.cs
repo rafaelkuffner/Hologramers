@@ -16,6 +16,6 @@ public class RemoteHoloSurfaceRequestMessage  {
 
     public static string createRequestMessage(int port)
     {
-        return "RemoteHoloSurfaceMessage" + MessageSeparators.L0 + Network.player.ipAddress + MessageSeparators.L1 + port;
+		return "RemoteHoloSurfaceMessage" + MessageSeparators.L0 +  IPManager.GetIP(ADDRESSFAM.IPv4)+ MessageSeparators.L1 + port;
     }
 }

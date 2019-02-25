@@ -38,8 +38,6 @@ public class RavatarAdjuster : MonoBehaviour {
         _haveReceivedARemoteHoloSurface = false;
 
         //Added here so meta doesn't mess with them
-        gameObject.AddComponent<TcpDepthListener>();
-        gameObject.AddComponent<UdpListener>();
         gameObject.AddComponent<SurfaceRequestListener>();
         gameObject.AddComponent<Tracker>();
 
@@ -162,76 +160,77 @@ public class RavatarAdjuster : MonoBehaviour {
             _trackerClientLocal = _trackercharLocal.GetComponent<TrackerClient>();
         }
 
-      
-        //Calculating forward
-        Vector3 fw = _trackerClientRemote.spineBase.localPosition - _remoteHoloSurface;
-        Debug.DrawLine(_trackerClientRemote.spineBase.localPosition, _remoteHoloSurface,Color.cyan);
-        //Translate it back to center of surface
-        _trackercharRemote.transform.localPosition = new Vector3(-_trackerClientRemote.spineBase.localPosition.x, 0, -_trackerClientRemote.spineBase.localPosition.z);
-        
-        //Adjusting orientation
-        fw.y = 0;
-        Vector3 diff = _origin.transform.position - _trackerClientLocal.GetHeadPos();
-        diff.y = 0;
-        _origin.transform.rotation = Quaternion.identity;
-        _origin.transform.Rotate(Vector3.Cross(fw, diff), Vector3.Angle(fw, diff));
+		if (Input.GetKeyUp (KeyCode.Space)) {
 
-        ////Adjusting scale
-        //my scale related to the remote guy
-        if(LoadDummyValues){
-            _trackerClientLocal.AdjustAvatarHeight();
-            _trackerClientRemote.AdjustAvatarHeight();
-        }
+	        //Calculating forward
+	        Vector3 fw = _trackerClientRemote.spineBase.localPosition - _remoteHoloSurface;
+	        Debug.DrawLine(_trackerClientRemote.spineBase.localPosition, _remoteHoloSurface,Color.cyan);
+	        //Translate it back to center of surface
+	        _trackercharRemote.transform.localPosition = new Vector3(-_trackerClientRemote.spineBase.localPosition.x, 0, -_trackerClientRemote.spineBase.localPosition.z);
+	        
+	        //Adjusting orientation
+	        fw.y = 0;
+	        Vector3 diff = _origin.transform.position - _trackerClientLocal.GetHeadPos();
+	        diff.y = 0;
+	        _origin.transform.rotation = Quaternion.identity;
+	        _origin.transform.Rotate(Vector3.Cross(fw, diff), Vector3.Angle(fw, diff));
 
-        float localHeadY = LoadDummyValues ? _trackerClientLocal.dummyHeight : _trackerClientLocal.GetHeadPos().y;
-        float remoteHeadY = LoadDummyValues ? _trackerClientRemote.dummyHeight : _trackerClientRemote.GetHeadPos().y;
+	        ////Adjusting scale
+	        //my scale related to the remote guy
+	        if(LoadDummyValues){
+	            _trackerClientLocal.AdjustAvatarHeight();
+	            _trackerClientRemote.AdjustAvatarHeight();
+	        }
 
-        float ratio = (localHeadY - _origin.transform.position.y) / remoteHeadY;
+	        float localHeadY = LoadDummyValues ? _trackerClientLocal.dummyHeight : _trackerClientLocal.GetHeadPos().y;
+	        float remoteHeadY = LoadDummyValues ? _trackerClientRemote.dummyHeight : _trackerClientRemote.GetHeadPos().y;
 
-        print("ratio " + ratio);
-        //if ratio > 1, means I'm the big guy, i can't upscale, so i do nothing.
-        if (ratio <= 1)
-        {
-            float remoteRatio = (remoteHeadY - _remoteHoloSurface.y) / localHeadY;
-            //if his ratio is <= 1, means he can downscale me over there, so its fine
-            //if not....
-            print("remoteRatio" + remoteRatio);
-            if (remoteRatio > 1)
-            {
-                Vector3 myHeadRemotePos = new Vector3(_remoteHoloSurface.x, _remoteHoloSurface.y + localHeadY, _remoteHoloSurface.z);
-                Vector3 hisHeadRemotePos =LoadDummyValues? new Vector3(0,remoteHeadY,0) : _trackerClientRemote.GetHeadPos();
-                //Vector from my head to his
-                Vector3 viewVec = hisHeadRemotePos - myHeadRemotePos;
-                Debug.DrawLine(hisHeadRemotePos, myHeadRemotePos, Color.green);
+	        float ratio = (localHeadY - _origin.transform.position.y) / remoteHeadY;
 
-                hisHeadRemotePos.y = myHeadRemotePos.y;
-                Vector3 planevec = hisHeadRemotePos - myHeadRemotePos;
-                Debug.DrawLine(hisHeadRemotePos, myHeadRemotePos, Color.green);
-                //view angle
-                float angle = Vector3.Angle(planevec, viewVec);
-                print("angle " + angle);
-                //now in my space, i get a vector to the ideal eye to eye head position for him
-                Vector3 hisHeadOrigin = _origin.transform.position;
-                hisHeadOrigin.y = localHeadY;
-                Vector3 localHeadPos = LoadDummyValues ? new Vector3(0, localHeadY, 0) :  _trackerClientLocal.GetHeadPos();
-                Vector3 catetoAdjacente = hisHeadOrigin - localHeadPos;
+	        print("ratio " + ratio);
+	        //if ratio > 1, means I'm the big guy, i can't upscale, so i do nothing.
+	        if (ratio <= 1)
+	        {
+	            float remoteRatio = (remoteHeadY - _remoteHoloSurface.y) / localHeadY;
+	            //if his ratio is <= 1, means he can downscale me over there, so its fine
+	            //if not....
+	            print("remoteRatio" + remoteRatio);
+	            if (remoteRatio > 1)
+	            {
+	                Vector3 myHeadRemotePos = new Vector3(_remoteHoloSurface.x, _remoteHoloSurface.y + localHeadY, _remoteHoloSurface.z);
+	                Vector3 hisHeadRemotePos =LoadDummyValues? new Vector3(0,remoteHeadY,0) : _trackerClientRemote.GetHeadPos();
+	                //Vector from my head to his
+	                Vector3 viewVec = hisHeadRemotePos - myHeadRemotePos;
+	                Debug.DrawLine(hisHeadRemotePos, myHeadRemotePos, Color.green);
 
-                float heightDiffLocal = catetoAdjacente.magnitude* Mathf.Tan(Mathf.Deg2Rad*angle);
-                print("diffLocal " + heightDiffLocal);
-                ratio = (localHeadY - _origin.transform.position.y + heightDiffLocal) / remoteHeadY;
-                Vector3 debugremotehead = _origin.transform.position;
-                debugremotehead.y = localHeadY + heightDiffLocal; 
-                Debug.DrawLine(localHeadPos, debugremotehead,Color.red);
-            }
-            //use ratio to scale
-            if(!float.IsInfinity(ratio) && !float.IsNaN(ratio) && ratio != 0) {
-                print("Scaling");
-                _origin.transform.localScale = new Vector3(ratio, ratio, ratio);
-            }
-        }
+	                hisHeadRemotePos.y = myHeadRemotePos.y;
+	                Vector3 planevec = hisHeadRemotePos - myHeadRemotePos;
+	                Debug.DrawLine(hisHeadRemotePos, myHeadRemotePos, Color.green);
+	                //view angle
+	                float angle = Vector3.Angle(planevec, viewVec);
+	                print("angle " + angle);
+	                //now in my space, i get a vector to the ideal eye to eye head position for him
+	                Vector3 hisHeadOrigin = _origin.transform.position;
+	                hisHeadOrigin.y = localHeadY;
+	                Vector3 localHeadPos = LoadDummyValues ? new Vector3(0, localHeadY, 0) :  _trackerClientLocal.GetHeadPos();
+	                Vector3 catetoAdjacente = hisHeadOrigin - localHeadPos;
+
+	                float heightDiffLocal = catetoAdjacente.magnitude* Mathf.Tan(Mathf.Deg2Rad*angle);
+	                print("diffLocal " + heightDiffLocal);
+	                ratio = (localHeadY - _origin.transform.position.y + heightDiffLocal) / remoteHeadY;
+	                Vector3 debugremotehead = _origin.transform.position;
+	                debugremotehead.y = localHeadY + heightDiffLocal; 
+	                Debug.DrawLine(localHeadPos, debugremotehead,Color.red);
+	            }
+	            //use ratio to scale
+	            if(!float.IsInfinity(ratio) && !float.IsNaN(ratio) && ratio != 0) {
+	                print("Scaling");
+	                _origin.transform.localScale = new Vector3(ratio, ratio, ratio);
+	            }
+	        }
 
 
-
+		}
 
         if(_holoSurfaceRequester != null)
         {

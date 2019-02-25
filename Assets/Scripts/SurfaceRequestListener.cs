@@ -96,7 +96,7 @@ public class SurfaceMessage
 {
     public static string createRequestMessage(int port)
     {
-        return "SurfaceMessage" + MessageSeparators.L0 + Network.player.ipAddress + MessageSeparators.L1 + port;
+		return "SurfaceMessage" + MessageSeparators.L0 + IPManager.GetIP(ADDRESSFAM.IPv4)+ MessageSeparators.L1 + port;
     }
 
     public static bool isMessage(string value)
