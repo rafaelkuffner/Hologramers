@@ -62,7 +62,7 @@ public class RavatarAdjuster : MonoBehaviour {
        
         UdpClient udp = new UdpClient();
         IPEndPoint remoteEndPoint = new IPEndPoint(IPAddress.Broadcast, TrackerProperties.Instance.Remote_HoloSurfaceListenPort);
-        string message = RemoteHoloSurfaceRequestMessage.createRequestMessage(TrackerProperties.Instance.Local_avatarReceivePort);
+		string message = RemoteHoloSurfaceRequestMessage.createRequestMessage(TrackerProperties.Instance.Local_surfaceReceivePort);
         byte[] data = System.Text.Encoding.UTF8.GetBytes(message);
         udp.Send(data, data.Length, remoteEndPoint);
     }

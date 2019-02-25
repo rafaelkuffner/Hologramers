@@ -59,7 +59,25 @@ public class UdpListener : MonoBehaviour {
                         string[] splitmsg = stringToParse.Split(MessageSeparators.L0);
                         gameObject.GetComponent<Tracker>().processCalibration(splitmsg[1]);
                         gameObject.GetComponent<Tracker>().initTCPLayer();
-                    }
+					}
+					if (Convert.ToChar(toProcess[0]) == 'F')
+					{
+						Debug.Log("Remote HoloSurface changed! ");
+						string stringToParse = Encoding.ASCII.GetString(toProcess);
+						string[] splitmsg = stringToParse.Split(MessageSeparators.L0);
+						RemoteHoloSurfaceMessage rf = new RemoteHoloSurfaceMessage(splitmsg[1]);
+						gameObject.GetComponent<RavatarAdjuster>().processHoloSurfaceMessage(rf);
+					}
+					if (Convert.ToChar(toProcess[0]) == 'R')
+					{
+						Debug.Log("Remote HoloSurface Request Received! ");
+						string stringToParse = Encoding.ASCII.GetString(toProcess);
+						string[] splitmsg = stringToParse.Split(MessageSeparators.L0);
+						RemoteHoloSurfaceRequestMessage rf = new RemoteHoloSurfaceRequestMessage(splitmsg[1]);
+						gameObject.GetComponent<RavatarAdjuster>().processHoloSurfaceRequestMessage(rf);
+						gameObject.GetComponent<Tracker>().processCalibration(splitmsg[1]);
+						gameObject.GetComponent<Tracker>().initTCPLayer();
+					}
                 }
                 _stringsToParse.RemoveAt(0);
             }
