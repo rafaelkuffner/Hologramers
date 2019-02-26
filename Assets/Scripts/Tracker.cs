@@ -125,9 +125,7 @@ public class Tracker : MonoBehaviour
             _clouds.Add(id, cloud);
             _cloudGameObjects.Add(id, cloudobj);
         }
-        if (_cloudGameObjects.Count > 0)
-            Camera.main.GetComponent<MouseOrbitImproved>().target = _cloudGameObjects.First().Value.transform;
-       
+          
     }
     public void processCalibration(string calibration)
     {
@@ -155,8 +153,7 @@ public class Tracker : MonoBehaviour
             _cloudGameObjects.Add(id, cloudobj);
 
         }
-        if(_cloudGameObjects.Count > 0)
-            Camera.main.GetComponent<MouseOrbitImproved>().target = _cloudGameObjects.First().Value.transform;
+
     }
 
 

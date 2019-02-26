@@ -355,22 +355,22 @@ namespace Meta.Plugin
                 var worldToLocal = transform.parent.worldToLocalMatrix;
 
                 //set the final view matrix for right eye
-                _rightCam.worldToCameraMatrix = viewRightMatrix * worldToLocal;
+               // _rightCam.worldToCameraMatrix = viewRightMatrix * worldToLocal;
 
                 //set the final view matrix for left eye
-                _leftCam.worldToCameraMatrix = viewLeftMatrix * worldToLocal;
+              //  _leftCam.worldToCameraMatrix = viewLeftMatrix * worldToLocal;
 
-                _contentCamera.worldToCameraMatrix = webcamViewMatrix*worldToLocal;
+              //  _contentCamera.worldToCameraMatrix = webcamViewMatrix*worldToLocal;
             }
             else
             {
                 //set the final view matrix for right eye
-                _rightCam.worldToCameraMatrix = viewRightMatrix;
+             //   _rightCam.worldToCameraMatrix = viewRightMatrix;
 
                 //set the final view matrix for left eye
-                _leftCam.worldToCameraMatrix = viewLeftMatrix;
+             //   _leftCam.worldToCameraMatrix = viewLeftMatrix;
 
-                _contentCamera.worldToCameraMatrix = webcamViewMatrix;
+             //   _contentCamera.worldToCameraMatrix = webcamViewMatrix;
             }
 
             //-------------- left eye --------------------
@@ -386,6 +386,11 @@ namespace Meta.Plugin
 
             //set the final proj matrix for right eye
             _rightCam.projectionMatrix = projRightMatrix;
+
+            var projContMatrix = Matrix4x4.identity;
+            CompositorApi.GetProjectionMatrix(0, ref projContMatrix);
+
+            _contentCamera.projectionMatrix = projContMatrix;
         }
 
         /// <summary>
