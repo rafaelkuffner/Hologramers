@@ -128,28 +128,28 @@ public class RavatarAdjuster : MonoBehaviour {
             processHoloSurfaceMessage(r);
         }
 
-        if (Input.GetKeyUp(KeyCode.Alpha1))
-        {
-            Transform pai = _surfaces[0].CenterGameObject.transform;
-            _origin.transform.position = pai.position;
-            _origin.transform.rotation = pai.rotation;
-            _origin.transform.parent = pai;
+        //if (Input.GetKeyUp(KeyCode.Alpha1))
+        //{
+        //    Transform pai = _surfaces[0].CenterGameObject.transform;
+        //    _origin.transform.position = pai.position;
+        //    _origin.transform.rotation = pai.rotation;
+        //    _origin.transform.parent = pai;
 
-        }
-        if (Input.GetKeyUp(KeyCode.Alpha2))
-        {
-            Transform pai = _surfaces[1].CenterGameObject.transform;
-            _origin.transform.position = pai.position;
-            _origin.transform.rotation = pai.rotation;
-            _origin.transform.parent = pai;
-        }
-        if (Input.GetKeyUp(KeyCode.Alpha3))
-        {
-            Transform pai = GameObject.Find("RightHand").transform;
-            _origin.transform.position = pai.position;
-            _origin.transform.rotation = pai.rotation;
-            _origin.transform.parent = pai;
-        }
+        //}
+        //if (Input.GetKeyUp(KeyCode.Alpha2))
+        //{
+        //    Transform pai = _surfaces[1].CenterGameObject.transform;
+        //    _origin.transform.position = pai.position;
+        //    _origin.transform.rotation = pai.rotation;
+        //    _origin.transform.parent = pai;
+        //}
+        //if (Input.GetKeyUp(KeyCode.Alpha3))
+        //{
+        //    Transform pai = GameObject.Find("RightHand").transform;
+        //    _origin.transform.position = pai.position;
+        //    _origin.transform.rotation = pai.rotation;
+        //    _origin.transform.parent = pai;
+        //}
 
         if (_trackerClientRemote == null)
         {
@@ -177,10 +177,10 @@ public class RavatarAdjuster : MonoBehaviour {
 
 	        ////Adjusting scale
 	        //my scale related to the remote guy
-	        if(LoadDummyValues){
-	            _trackerClientLocal.AdjustAvatarHeight();
-	            _trackerClientRemote.AdjustAvatarHeight();
-	        }
+	        //if(LoadDummyValues){
+	        //    _trackerClientLocal.AdjustAvatarHeight();
+	        //    _trackerClientRemote.AdjustAvatarHeight();
+	        //}
 
 	        float localHeadY = LoadDummyValues ? _trackerClientLocal.dummyHeight : _trackerClientLocal.GetHeadPos().y;
 	        float remoteHeadY = LoadDummyValues ? _trackerClientRemote.dummyHeight : _trackerClientRemote.GetHeadPos().y;
