@@ -1,0 +1,35 @@
+last.run=2019-03-01-18:36:01
+setup.type=LEFT
+start.formation=FACE_TO_FACE
+
+rpc.port=5000
+
+__SETUP ON THE LEFT__
+left.setup.address=192.168.0.103
+left.tracker.listen.port=5001
+left.tracker.broadcast.port=5002
+left.tracker.surface.request.port=5001
+left.tracker.surface.listener.port=5010
+left.client.avatar.listen.port=5011
+left.sensor.listen.port=5007
+left.workspaceCenter.transform.position=-1.137133:0.731974:-1.983322
+left.workspaceCenter.transform.rotation=-0.004975129:0.03278626:0.01078451:0.9993919
+left.trackedKinect.name=XUXUBELEZA
+left.rigidBodyCalibration.transform.position=-0.5510814:1.368222:-0.7613544
+left.rigidBodyCalibration.transform.rotation=-0.1552321:0.1359297:0.01358396:0.9783872
+
+
+__SETUP ON THE RIGHT__
+right.setup.address=192.168.0.103
+right.tracker.listen.port=5101
+right.tracker.broadcast.port=5102
+right.tracker.surface.request.port=5101
+right.tracker.surface.listener.port=5110
+right.client.avatar.listen.port=5111
+right.sensor.listen.port=5107
+right.workspaceCenter.transform.rotation=-0.00250193:-0.9994864:-0.006632686:0.03125027
+right.workspaceCenter.transform.position=-1.246668:0.7200221:1.126539
+right.trackedKinect.name=FRANK-SALES
+right.rigidBodyCalibration.transform.position=-0.6654767:1.365969:-0.1073656
+right.rigidBodyCalibration.transform.rotation=0.04641674:-0.9694152:-0.144299:-0.1930222
+
