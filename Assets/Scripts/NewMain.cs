@@ -44,6 +44,8 @@ public class NewMain : MonoBehaviour {
 
     public Transform localCreepyTrackerOrigin;
     public Transform remoteCreepyTrackerOrigin;
+    public Transform remoteCreepyTrackerOriginDelta;
+
     public Transform hologramPivot;
     public Vector3 remoteCreepyTrackerPosition;
 
@@ -181,6 +183,13 @@ public class NewMain : MonoBehaviour {
         _sensors[remKinectName].transform.forward = -_sensors[remKinectName].transform.forward;
         remoteCreepyTrackerOrigin.parent = null;
         _sensors[remKinectName].transform.parent = remoteCreepyTrackerOrigin.transform;
+
+        Vector3 deltapos = _getPositionFromConfig(ConfigProperties.load(ConfigFile, _localPrefix + ".remoteCreepyTrackerDelta.position"));
+        Quaternion deltarot = _getRotationFromConfig(ConfigProperties.load(ConfigFile, _localPrefix + ".remoteCreepyTrackerDelta.rotation"));
+        remoteCreepyTrackerOriginDelta = new GameObject("RemoteCreepyTrackerOriginPivot").transform;
+        remoteCreepyTrackerOrigin.transform.parent = remoteCreepyTrackerOriginDelta;
+        remoteCreepyTrackerOriginDelta.position = deltapos;
+        remoteCreepyTrackerOriginDelta.rotation = deltarot;
     }
 
     private void Update()
@@ -228,6 +237,24 @@ public class NewMain : MonoBehaviour {
             ConfigProperties.save(ConfigFile, "right.rigidBodyCalibration.transform.position", p);
             ConfigProperties.save(ConfigFile, "right.rigidBodyCalibration.transform.rotation", r);
         }
+
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            GameObject pivot = GameObject.Find("RemoteCreepyTrackerOriginPivot");
+            if (pivot != null)
+            {
+                string p = _gameObjectPositionToString(pivot.transform.position);
+                string r = _gameObjectRotationToString(pivot.transform.rotation);
+                ConfigProperties.save(ConfigFile, _localPrefix + ".remoteCreepyTrackerDelta.position", p);
+                ConfigProperties.save(ConfigFile, _localPrefix + ".remoteCreepyTrackerDelta.rotation", r);
+
+
+            }
+            else
+            {
+                Debug.LogError("NO PIVOT FOUND");
+            }
+        }
     }
 
     private void _configureWorkspace()
@@ -235,16 +262,16 @@ public class NewMain : MonoBehaviour {
         //PUT THE GUY ON TOP OF HIS SURFACE
         //RemoteARCameraRig.transform.parent = remoteCreepyTrackerOrigin;
         //remoteWorkspaceOrigin.transform.parent = remoteCreepyTrackerOrigin;
-        remoteCreepyTrackerPosition = remoteCreepyTrackerOrigin.position;
+        remoteCreepyTrackerPosition = remoteCreepyTrackerOriginDelta.position;
 
         GameObject g = new GameObject("Pivot");
         hologramPivot = g.transform;
         hologramPivot.parent = localWorkspaceOrigin.transform;
         hologramPivot.localPosition = Vector3.zero;
         hologramPivot.localRotation = Quaternion.identity;
-        remoteCreepyTrackerOrigin.transform.parent = hologramPivot;
-        remoteCreepyTrackerOrigin.localPosition = Vector3.zero;
-        remoteCreepyTrackerOrigin.localRotation = Quaternion.identity;
+        remoteCreepyTrackerOriginDelta.parent = hologramPivot;
+        remoteCreepyTrackerOriginDelta.localPosition = Vector3.zero;
+        remoteCreepyTrackerOriginDelta.localRotation = Quaternion.identity;
 
     }
 
@@ -256,7 +283,7 @@ public class NewMain : MonoBehaviour {
 
         //Translate it back to center of surface
         Vector3 holoPos = new Vector3(RemoteARCameraRig.position.x - remoteCreepyTrackerPosition.x , 0, RemoteARCameraRig.position.z - remoteCreepyTrackerPosition.z );
-        remoteCreepyTrackerOrigin.localPosition = holoPos;
+        remoteCreepyTrackerOriginDelta.localPosition = holoPos;
         //_trackercharRemote.transform.localPosition = new Vector3(-_trackerClientRemote.spineBase.localPosition.x, 0, -_trackerClientRemote.spineBase.localPosition.z);
 
         //Adjusting orientation
