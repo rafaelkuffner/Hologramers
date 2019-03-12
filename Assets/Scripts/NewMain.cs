@@ -23,10 +23,6 @@ public class NewMain : MonoBehaviour {
     private string _localPrefix;
     private string _remotePrefix;
 
-    public BodiesManager localBodiesManager;
-    public UdpBodiesListener localUdpListener;
-    public BodiesManager remoteBodiesManager;
-    public UdpBodiesListener remoteUdpListener;
 
     public TrackerMesh ravatarManagerTracker;
 
@@ -39,21 +35,27 @@ public class NewMain : MonoBehaviour {
     private int localTrackerSurfaceListenerPort;
     private int remoteTrackerSurfaceListenerPort;
 
+    public Transform leftARCameraRig_RigidBody;
+    public Transform rightARCameraRig_RigidBody;
+    public Transform leftWS_RigidBody;
+    public Transform rightWS_RigidBody;
+
     public Transform ARCameraRig;
     public Transform RemoteARCameraRig;
 
     public Transform localCreepyTrackerOrigin;
     public Transform remoteCreepyTrackerOrigin;
-    public Transform remoteCreepyTrackerOriginDelta;
 
-    public Transform hologramPivot;
+    private Transform hologramPivot;
     public Vector3 remoteCreepyTrackerPosition;
+    public Quaternion remoteCreepyTrackerRotation;
 
     public Dictionary<string, GameObject> _sensors;
     private SurfaceRectangle _localSurface;
     private SurfaceRectangle _remoteSurface;
 
     private bool _everythingIsConfigured = false;
+    private bool gotClouds = false;
 
     public Transform localWorkspaceOrigin;
     public Transform remoteWorkspaceOrigin;
@@ -61,6 +63,7 @@ public class NewMain : MonoBehaviour {
     public Transform rightRigidBody;
 
     public Transform workspaceTransform;
+    public bool calibrated;
 
     void Start()
     {
@@ -98,13 +101,20 @@ public class NewMain : MonoBehaviour {
         int remoteAvatarListenPort = int.Parse(ConfigProperties.load(ConfigFile, _remotePrefix + ".client.avatar.listen.port"));
 
         GetComponent<CreepyTrackerSurfaceRequestListener>().StartReceive(localTrackerSurfaceListenerPort, remoteTrackerSurfaceListenerPort);
-        localUdpListener.startListening(localTrackerBroadcastPort);
-        remoteUdpListener.startListening(remoteTrackerBroadcastPort);
 
-        localWorkspaceOrigin.transform.position = _getPositionFromConfig(ConfigProperties.load(ConfigFile, _localPrefix + ".workspaceCenter.transform.position"));
-        localWorkspaceOrigin.transform.rotation = _getRotationFromConfig(ConfigProperties.load(ConfigFile, _localPrefix + ".workspaceCenter.transform.rotation"));
-        remoteWorkspaceOrigin.transform.position = _getPositionFromConfig(ConfigProperties.load(ConfigFile, _remotePrefix + ".workspaceCenter.transform.position"));
-        remoteWorkspaceOrigin.transform.rotation = _getRotationFromConfig(ConfigProperties.load(ConfigFile, _remotePrefix + ".workspaceCenter.transform.rotation"));
+        GameObject eyes = GameObject.Find("Eyes");
+        eyes.transform.position = _getPositionFromConfig(ConfigProperties.load(ConfigFile, _localPrefix + ".eyes.localPosition"));
+        eyes.transform.rotation = _getRotationFromConfig(ConfigProperties.load(ConfigFile, _localPrefix + ".eyes.localRotation"));
+        //remoteWorkspaceOrigin.transform.position = _getPositionFromConfig(ConfigProperties.load(ConfigFile, _remotePrefix + ".workspaceCenter.transform.position"));
+        //remoteWorkspaceOrigin.transform.rotation = _getRotationFromConfig(ConfigProperties.load(ConfigFile, _remotePrefix + ".workspaceCenter.transform.rotation"));
+
+        if (calibrated)
+        {
+            leftWS_RigidBody.GetComponentInChildren<MeshRenderer>().enabled = false;
+            rightWS_RigidBody.GetComponentInChildren<MeshRenderer>().enabled = false;
+            leftARCameraRig_RigidBody.GetComponentInChildren<MeshRenderer>().enabled = false;
+            rightARCameraRig_RigidBody.GetComponentInChildren<MeshRenderer>().enabled = false;
+        }
 
         _sensors = new Dictionary<string, GameObject>();
         _surfaceRequest();
@@ -139,6 +149,8 @@ public class NewMain : MonoBehaviour {
         {
             Debug.LogError("lokl");
         }
+
+        gotClouds = true;
     }
 
     private void _surfaceRequest()
@@ -167,7 +179,7 @@ public class NewMain : MonoBehaviour {
         localCreepyTrackerOrigin.parent = _sensors[locKinectName].transform;
         _sensors[locKinectName].transform.position = locpos;
         _sensors[locKinectName].transform.rotation = locrot;
-        _sensors[locKinectName].transform.forward = -_sensors[locKinectName].transform.forward;
+       // _sensors[locKinectName].transform.forward = -_sensors[locKinectName].transform.forward;
         localCreepyTrackerOrigin.parent = null;
         _sensors[locKinectName].transform.parent = localCreepyTrackerOrigin.transform;
 
@@ -180,20 +192,59 @@ public class NewMain : MonoBehaviour {
         remoteCreepyTrackerOrigin.parent = _sensors[remKinectName].transform;
         _sensors[remKinectName].transform.position = rempos;
         _sensors[remKinectName].transform.rotation = remrot;
-        _sensors[remKinectName].transform.forward = -_sensors[remKinectName].transform.forward;
+     //   _sensors[remKinectName].transform.forward = -_sensors[remKinectName].transform.forward;
         remoteCreepyTrackerOrigin.parent = null;
         _sensors[remKinectName].transform.parent = remoteCreepyTrackerOrigin.transform;
 
+        //Position to center the avatar
+
+
         Vector3 deltapos = _getPositionFromConfig(ConfigProperties.load(ConfigFile, _localPrefix + ".remoteCreepyTrackerDelta.position"));
         Quaternion deltarot = _getRotationFromConfig(ConfigProperties.load(ConfigFile, _localPrefix + ".remoteCreepyTrackerDelta.rotation"));
-        remoteCreepyTrackerOriginDelta = new GameObject("RemoteCreepyTrackerOriginPivot").transform;
-        remoteCreepyTrackerOrigin.transform.parent = remoteCreepyTrackerOriginDelta;
-        remoteCreepyTrackerOriginDelta.position = deltapos;
-        remoteCreepyTrackerOriginDelta.rotation = deltarot;
+        remoteCreepyTrackerOrigin.localPosition += deltapos;
+        remoteCreepyTrackerOrigin.localRotation *= deltarot;
+
+        remoteCreepyTrackerPosition = remoteCreepyTrackerOrigin.position;
+        remoteCreepyTrackerRotation = remoteCreepyTrackerOrigin.rotation;
+
+        GameObject g = new GameObject("Delta");
+        hologramPivot = g.transform;
+        hologramPivot.position = remoteCreepyTrackerOrigin.position;
+        hologramPivot.rotation = remoteCreepyTrackerOrigin.rotation;
+        remoteCreepyTrackerOrigin.parent = g.transform;
+        remoteCreepyTrackerOrigin.localPosition = Vector3.zero;
+        remoteCreepyTrackerOrigin.localRotation = Quaternion.identity;
+
+        //hologramPivot.position = deltapos;
+        //hologramPivot.rotation = deltarot;
+
+
+    }
+
+    void UpdateRigidBodies()
+    {
+        
+        Transform myRig = setupLocation == SetupLocation.LEFT ? leftARCameraRig_RigidBody : rightARCameraRig_RigidBody;
+        Transform hisRig = setupLocation == SetupLocation.LEFT ? rightARCameraRig_RigidBody :leftARCameraRig_RigidBody;
+        Transform myWS = setupLocation == SetupLocation.LEFT ? leftWS_RigidBody : rightWS_RigidBody;
+        Transform hisWS = setupLocation == SetupLocation.LEFT ? rightWS_RigidBody : leftWS_RigidBody;
+
+        ARCameraRig.transform.position = myRig.position;
+        ARCameraRig.transform.rotation = myRig.rotation;
+
+        RemoteARCameraRig.transform.position = hisRig.position;
+        RemoteARCameraRig.transform.rotation = hisRig.rotation;
+
+        localWorkspaceOrigin.transform.position = myWS.position;
+   
+        remoteWorkspaceOrigin.transform.position = hisWS.position;
     }
 
     private void Update()
     {
+        UpdateRigidBodies();
+
+
         if (!_everythingIsConfigured && _localSurface != null && _remoteSurface != null)
         {
             calibrateOptiTrackAndCreepyTracker();
@@ -204,55 +255,45 @@ public class NewMain : MonoBehaviour {
             remoteCreepyTrackerOrigin
             );
 
-            _configureWorkspace();
+            if(calibrated) _configureWorkspace();
             _everythingIsConfigured = true;
         }
 
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
+        if (_everythingIsConfigured && calibrated && gotClouds)
             _adjustHologramSize();
-        }
 
-        if (Input.GetKeyDown(KeyCode.Q))
+
+
+        if (Input.GetKeyDown(KeyCode.D))
         {
-            string p = _gameObjectPositionToString(leftRigidBody.transform.position);
-            string r = _gameObjectRotationToString(leftRigidBody.transform.rotation);
-            ConfigProperties.save(ConfigFile, "left.workspaceCenter.transform.position", p);
-            ConfigProperties.save(ConfigFile, "left.workspaceCenter.transform.rotation", r);
-
-            p = _gameObjectPositionToString(rightRigidBody.transform.position);
-            r = _gameObjectRotationToString(rightRigidBody.transform.rotation);
-            ConfigProperties.save(ConfigFile, "right.workspaceCenter.transform.position", p);
-            ConfigProperties.save(ConfigFile, "right.workspaceCenter.transform.rotation", r);
-        }
-        if (Input.GetKeyDown(KeyCode.W))
-        {
-            string p = _gameObjectPositionToString(leftRigidBody.transform.position);
-            string r = _gameObjectRotationToString(leftRigidBody.transform.rotation);
-            ConfigProperties.save(ConfigFile, "left.rigidBodyCalibration.transform.position", p);
-            ConfigProperties.save(ConfigFile, "left.rigidBodyCalibration.transform.rotation", r);
-
-            p = _gameObjectPositionToString(rightRigidBody.transform.position);
-            r = _gameObjectRotationToString(rightRigidBody.transform.rotation);
-            ConfigProperties.save(ConfigFile, "right.rigidBodyCalibration.transform.position", p);
-            ConfigProperties.save(ConfigFile, "right.rigidBodyCalibration.transform.rotation", r);
-        }
-
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            GameObject pivot = GameObject.Find("RemoteCreepyTrackerOriginPivot");
+            GameObject pivot = GameObject.Find("Delta");
             if (pivot != null)
             {
                 string p = _gameObjectPositionToString(pivot.transform.position);
                 string r = _gameObjectRotationToString(pivot.transform.rotation);
                 ConfigProperties.save(ConfigFile, _localPrefix + ".remoteCreepyTrackerDelta.position", p);
                 ConfigProperties.save(ConfigFile, _localPrefix + ".remoteCreepyTrackerDelta.rotation", r);
-
-
             }
             else
             {
                 Debug.LogError("NO PIVOT FOUND");
+            }
+        }
+
+
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            GameObject eyes = GameObject.Find("Eyes");
+            if (eyes != null)
+            {
+                string p = _gameObjectPositionToString(eyes.transform.localPosition);
+                string r = _gameObjectRotationToString(eyes.transform.localRotation);
+                ConfigProperties.save(ConfigFile, _localPrefix + ".eyes.localPosition", p);
+                ConfigProperties.save(ConfigFile, _localPrefix + ".eyes.localRotation", r);
+            }
+            else
+            {
+                Debug.LogError("NO EYES FOUND");
             }
         }
     }
@@ -262,40 +303,37 @@ public class NewMain : MonoBehaviour {
         //PUT THE GUY ON TOP OF HIS SURFACE
         //RemoteARCameraRig.transform.parent = remoteCreepyTrackerOrigin;
         //remoteWorkspaceOrigin.transform.parent = remoteCreepyTrackerOrigin;
-        remoteCreepyTrackerPosition = remoteCreepyTrackerOriginDelta.position;
 
-        GameObject g = new GameObject("Pivot");
-        hologramPivot = g.transform;
-        hologramPivot.parent = localWorkspaceOrigin.transform;
+        hologramPivot.parent = localWorkspaceOrigin;
         hologramPivot.localPosition = Vector3.zero;
         hologramPivot.localRotation = Quaternion.identity;
-        remoteCreepyTrackerOriginDelta.parent = hologramPivot;
-        remoteCreepyTrackerOriginDelta.localPosition = Vector3.zero;
-        remoteCreepyTrackerOriginDelta.localRotation = Quaternion.identity;
-
+        
     }
 
     private void _adjustHologramSize()
     {
         ////Calculating forward
-        Vector3 fw = RemoteARCameraRig.position - remoteWorkspaceOrigin.position;
+        Vector3 fw = remoteWorkspaceOrigin.position - RemoteARCameraRig.position;
         //Debug.DrawLine(_trackerClientRemote.spineBase.localPosition, _remoteHoloSurface, Color.cyan);
 
         //Translate it back to center of surface
         Vector3 holoPos = new Vector3(RemoteARCameraRig.position.x - remoteCreepyTrackerPosition.x , 0, RemoteARCameraRig.position.z - remoteCreepyTrackerPosition.z );
-        remoteCreepyTrackerOriginDelta.localPosition = holoPos;
+        hologramPivot.localPosition = holoPos;
         //_trackercharRemote.transform.localPosition = new Vector3(-_trackerClientRemote.spineBase.localPosition.x, 0, -_trackerClientRemote.spineBase.localPosition.z);
 
         //Adjusting orientation
         fw.y = 0;
-        Vector3 diff = localWorkspaceOrigin.position - ARCameraRig.position;
+        Vector3 diff = ARCameraRig.position - localWorkspaceOrigin.position;
         diff.y = 0;
-        hologramPivot.localRotation = Quaternion.identity;
-        hologramPivot.Rotate(Vector3.Cross(fw, diff), Vector3.Angle(fw, diff),Space.Self);
+        localWorkspaceOrigin.rotation = Quaternion.identity;
+        localWorkspaceOrigin.Rotate(Vector3.Cross(fw, diff), Vector3.Angle(fw, diff), Space.Self);
+        localWorkspaceOrigin.rotation *= remoteCreepyTrackerRotation;
 
         float localHeadY = ARCameraRig.position.y;
         float remoteHeadY = RemoteARCameraRig.position.y;
 
+        if (remoteHeadY == 0)
+            return;
         float ratio = (localHeadY - localWorkspaceOrigin.transform.position.y) / remoteHeadY;
 
         print("ratio " + ratio);
@@ -336,8 +374,7 @@ public class NewMain : MonoBehaviour {
             //use ratio to scale
             if (!float.IsInfinity(ratio) && !float.IsNaN(ratio) && ratio != 0)
             {
-                print("Scaling");
-                hologramPivot.localScale = new Vector3(ratio, ratio, ratio);
+                localWorkspaceOrigin.localScale = new Vector3(ratio, ratio, ratio);
             }
         }
     }

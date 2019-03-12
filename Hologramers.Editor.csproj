@@ -341,6 +341,7 @@
     <Compile Include="Assets\MetaSDK\Meta\Scripts\MetaUtils\Editor\UnityMenu.cs" />
     <Compile Include="Assets\MetaSDK\Meta\Scripts\Rendering\Editor\MetaUIContentCustomInspector.cs" />
     <Compile Include="Assets\MetaSDK\MetaExamples\Assets\Scripts\Editor\MetaPointCloudExampleEditor.cs" />
+    <Compile Include="Assets\OptiTrack\Editor\Scripts\OptitrackRigidBodyEditor.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\MetaSDK\Meta\EventSystem\Shaders\UnlitTransparentTexture.shader" />
@@ -360,6 +361,8 @@
     <None Include="Assets\MetaSDK\MetaExamples\Assets\Audio\RelaxingMusicCredits.txt" />
     <None Include="Assets\MetaSDK\MetaExamples\Assets\Shaders\3DTextOneSided.shader" />
     <None Include="Assets\MetaSDK\MetaExamples\Assets\Shaders\PointCloud.shader" />
+    <None Include="Assets\OptiTrack\Editor\Materials\MarkerShader.shader" />
+    <None Include="Assets\OptiTrack\README_OptiTrack_Unity.txt" />
     <None Include="Assets\Shaders\meshSimple.shader" />
     <None Include="Assets\config.txt" />
   </ItemGroup>

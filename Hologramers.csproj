@@ -256,6 +256,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\holoPosUpdater.cs" />
     <Compile Include="Assets\MetaSDK\Meta\Binding\Api\ButtonApi.cs" />
     <Compile Include="Assets\MetaSDK\Meta\Binding\Api\CameraApi.cs" />
     <Compile Include="Assets\MetaSDK\Meta\Binding\Api\CompositorApi.cs" />
@@ -587,6 +588,12 @@
     <Compile Include="Assets\MetaSDK\MetaExamples\Assets\Scripts\GazeExampleScript.cs" />
     <Compile Include="Assets\MetaSDK\MetaExamples\Assets\Scripts\MetaPointCloudExample.cs" />
     <Compile Include="Assets\MetaSDK\MetaExamples\Assets\Scripts\SwipeIntensityLightControl.cs" />
+    <Compile Include="Assets\OptiTrack\Plugins\Managed\NatNetLib\Client.cs" />
+    <Compile Include="Assets\OptiTrack\Plugins\Managed\NatNetLib\Native.cs" />
+    <Compile Include="Assets\OptiTrack\Scripts\OptitrackHmd.cs" />
+    <Compile Include="Assets\OptiTrack\Scripts\OptitrackRigidBody.cs" />
+    <Compile Include="Assets\OptiTrack\Scripts\OptitrackSkeletonAnimator.cs" />
+    <Compile Include="Assets\OptiTrack\Scripts\OptitrackStreamingClient.cs" />
     <Compile Include="Assets\RavatarManager\Scripts\AvatarMessage.cs" />
     <Compile Include="Assets\RavatarManager\Scripts\CloudMessage.cs" />
     <Compile Include="Assets\RavatarManager\Scripts\Decompressor.cs" />
@@ -611,13 +618,14 @@
     <Compile Include="Assets\Scripts\EyesPosition.cs" />
     <Compile Include="Assets\Scripts\GrabSphere.cs" />
     <Compile Include="Assets\Scripts\Main.cs" />
+    <Compile Include="Assets\Scripts\MyDoubleExponentialFilter.cs" />
     <Compile Include="Assets\Scripts\NewMain.cs" />
-    <Compile Include="Assets\Scripts\Optitrack\CSVPrinter.cs" />
-    <Compile Include="Assets\Scripts\Optitrack\DirectMulticastSocketClient.cs" />
-    <Compile Include="Assets\Scripts\Optitrack\LockRotation.cs" />
-    <Compile Include="Assets\Scripts\Optitrack\OptiTrackMultiObjectTracking.cs" />
-    <Compile Include="Assets\Scripts\Optitrack\OptiTrackTracking.cs" />
-    <Compile Include="Assets\Scripts\Optitrack\QuickOptiTrackPlace.cs" />
+    <Compile Include="Assets\Scripts\OPTIPIRES\CSVPrinter.cs" />
+    <Compile Include="Assets\Scripts\OPTIPIRES\DirectMulticastSocketClient.cs" />
+    <Compile Include="Assets\Scripts\OPTIPIRES\LockRotation.cs" />
+    <Compile Include="Assets\Scripts\OPTIPIRES\OptiTrackMultiObjectTracking.cs" />
+    <Compile Include="Assets\Scripts\OPTIPIRES\OptiTrackTracking.cs" />
+    <Compile Include="Assets\Scripts\OPTIPIRES\QuickOptiTrackPlace.cs" />
     <Compile Include="Assets\Scripts\Table.cs" />
     <Compile Include="Assets\Scripts\UdpBodiesListener.cs" />
     <Compile Include="Assets\Scripts\Workspace.cs" />
@@ -640,6 +648,8 @@
     <None Include="Assets\MetaSDK\MetaExamples\Assets\Audio\RelaxingMusicCredits.txt" />
     <None Include="Assets\MetaSDK\MetaExamples\Assets\Shaders\3DTextOneSided.shader" />
     <None Include="Assets\MetaSDK\MetaExamples\Assets\Shaders\PointCloud.shader" />
+    <None Include="Assets\OptiTrack\Editor\Materials\MarkerShader.shader" />
+    <None Include="Assets\OptiTrack\README_OptiTrack_Unity.txt" />
     <None Include="Assets\Shaders\meshSimple.shader" />
     <None Include="Assets\config.txt" />
   </ItemGroup>

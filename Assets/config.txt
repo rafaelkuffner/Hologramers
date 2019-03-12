@@ -1,8 +1,11 @@
-last.run=2019-03-01-18:36:01
+last.run=2019-03-12-18:58:47
 setup.type=LEFT
 start.formation=FACE_TO_FACE
 
 rpc.port=5000
+optitrack.server.address=192.168.0.101
+eyes.localPosition=-0.04087834:-0.1511804:-0.07863502
+eyes.localRotation=0:0:0:1
 
 __SETUP ON THE LEFT__
 left.setup.address=192.168.0.103
@@ -12,12 +15,15 @@ left.tracker.surface.request.port=5001
 left.tracker.surface.listener.port=5010
 left.client.avatar.listen.port=5011
 left.sensor.listen.port=5007
-left.workspaceCenter.transform.position=-1.137133:0.731974:-1.983322
-left.workspaceCenter.transform.rotation=-0.004975129:0.03278626:0.01078451:0.9993919
+left.workspaceCenter.transform.position=-0.2547953:0.8967322:-1.870555
+left.workspaceCenter.transform.rotation=-0.003861481:0.03233589:-0.006906857:0.9994457
 left.trackedKinect.name=XUXUBELEZA
-left.rigidBodyCalibration.transform.position=-0.5510814:1.368222:-0.7613544
-left.rigidBodyCalibration.transform.rotation=-0.1552321:0.1359297:0.01358396:0.9783872
-
+left.rigidBodyCalibration.transform.position=0.5075188:1.367918:-0.7997437
+left.rigidBodyCalibration.transform.rotation=0.01751071:-0.9441455:0.1141249:0.3086393
+left.remoteCreepyTrackerDelta.rotation=-0.01047144:0.008027967:8.407166E-05:0.999913
+left.remoteCreepyTrackerDelta.position=0.01:0.01:0.06
+left.eyes.localPosition=-0.027:-0.12:-0.05
+left.eyes.localRotation=0.004188058:-0.01823751:7.639312E-05:0.9998249
 
 __SETUP ON THE RIGHT__
 right.setup.address=192.168.0.103
@@ -27,9 +33,13 @@ right.tracker.surface.request.port=5101
 right.tracker.surface.listener.port=5110
 right.client.avatar.listen.port=5111
 right.sensor.listen.port=5107
-right.workspaceCenter.transform.rotation=-0.00250193:-0.9994864:-0.006632686:0.03125027
-right.workspaceCenter.transform.position=-1.246668:0.7200221:1.126539
+right.workspaceCenter.transform.position:0:0:0
+right.workspaceCenter.transform.rotation=0.001210168:-0.9994411:0.01071058:0.0316446
+right.workspaceCenter.transform.position=-0.2785507:0.9048653:0.7760009
 right.trackedKinect.name=FRANK-SALES
-right.rigidBodyCalibration.transform.position=-0.6654767:1.365969:-0.1073656
-right.rigidBodyCalibration.transform.rotation=0.04641674:-0.9694152:-0.144299:-0.1930222
-
+right.rigidBodyCalibration.transform.position=0.3667089:1.390567:-0.2515455
+right.rigidBodyCalibration.transform.rotation=0.1133844:-0.2135139:0.03565858:0.9696826
+right.remoteCreepyTrackerDelta.rotation=0:0:-0.0486039:0.9988182
+right.remoteCreepyTrackerDelta.position=-0.16:0.03:0
+right.eyes.localPosition=0:0:0
+right.eyes.localRotation=0:0:0:1

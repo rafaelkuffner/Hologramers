@@ -272,6 +272,8 @@
     <None Include="Assets\MetaSDK\MetaExamples\Assets\Audio\RelaxingMusicCredits.txt" />
     <None Include="Assets\MetaSDK\MetaExamples\Assets\Shaders\3DTextOneSided.shader" />
     <None Include="Assets\MetaSDK\MetaExamples\Assets\Shaders\PointCloud.shader" />
+    <None Include="Assets\OptiTrack\Editor\Materials\MarkerShader.shader" />
+    <None Include="Assets\OptiTrack\README_OptiTrack_Unity.txt" />
     <None Include="Assets\Shaders\meshSimple.shader" />
     <None Include="Assets\config.txt" />
   </ItemGroup>
