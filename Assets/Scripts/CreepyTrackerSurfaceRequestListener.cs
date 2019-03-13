@@ -11,6 +11,7 @@ using System.Text;
 public class CreepyTrackerSurfaceRequestListener : MonoBehaviour
 {
     private NewMain _main;
+    private Calibration _calibration;
 
     private int _portForLocal = 0;
     private int _portForRemote = 0;
@@ -26,6 +27,7 @@ public class CreepyTrackerSurfaceRequestListener : MonoBehaviour
     {
 
         _main = GetComponent<NewMain>();
+        _calibration = GetComponent<Calibration>();
 
         _portForLocal = localSurfaceListenPort;
         _portForRemote = remoteSurfaceListenPort;
@@ -61,7 +63,10 @@ public class CreepyTrackerSurfaceRequestListener : MonoBehaviour
             SurfaceRectangle s = new SurfaceRectangle(result);
             Debug.Log("SURFACE_________________________________________ " + s.ToString());
             s.sensors = sensors;
-            _main.setLocalSurface(s);
+            if(_main != null)
+                _main.setLocalSurface(s);
+            if (_calibration != null)
+                _calibration.setLocalSurface(s);
             _udpClient_LocalSurface.Close();
         }
         else
@@ -88,7 +93,10 @@ public class CreepyTrackerSurfaceRequestListener : MonoBehaviour
             SurfaceRectangle s = new SurfaceRectangle(result);
             Debug.Log("SURFACE_________________________________________ " + s.ToString());
             s.sensors = sensors;
-            _main.setRemoteSurface(s);
+            if (_main != null)
+                _main.setRemoteSurface(s);
+            if (_calibration != null)
+                _calibration.setRemoteSurface(s);
             _udpClient_RemoteSurface.Close();
         }
         else

@@ -100,7 +100,13 @@ public class TrackerMesh : MonoBehaviour
     {
         initNetwork(_listenPort,_cloudGameObjects.Count);
         Debug.Log("Started TCP Layer with " + _cloudGameObjects.Count);
-        GameObject.Find("main").GetComponent<NewMain>().setupSensors(Sensors);
+
+        NewMain m = GameObject.Find("main").GetComponent<NewMain>();
+        Calibration c = GameObject.Find("main").GetComponent<Calibration>();
+        if (m != null)
+            m.setupSensors(Sensors);
+        else
+            c.setupSensors(Sensors);
     }
 
     public void processCalibrationMatrix(string calibration)

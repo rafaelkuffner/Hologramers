@@ -46,6 +46,7 @@ public class NewMain : MonoBehaviour {
     public Transform localCreepyTrackerOrigin;
     public Transform remoteCreepyTrackerOrigin;
 
+    //Holograms stuff
     private Transform hologramPivot;
     public Vector3 remoteCreepyTrackerPosition;
     public Quaternion remoteCreepyTrackerRotation;
@@ -317,7 +318,7 @@ public class NewMain : MonoBehaviour {
         //Debug.DrawLine(_trackerClientRemote.spineBase.localPosition, _remoteHoloSurface, Color.cyan);
 
         //Translate it back to center of surface
-        Vector3 holoPos = new Vector3(RemoteARCameraRig.position.x - remoteCreepyTrackerPosition.x , 0, RemoteARCameraRig.position.z - remoteCreepyTrackerPosition.z );
+        Vector3 holoPos = new Vector3(RemoteARCameraRig.position.x - remoteCreepyTrackerPosition.x , remoteCreepyTrackerPosition.y, RemoteARCameraRig.position.z - remoteCreepyTrackerPosition.z );
         hologramPivot.localPosition = holoPos;
         //_trackercharRemote.transform.localPosition = new Vector3(-_trackerClientRemote.spineBase.localPosition.x, 0, -_trackerClientRemote.spineBase.localPosition.z);
 
@@ -336,14 +337,12 @@ public class NewMain : MonoBehaviour {
             return;
         float ratio = (localHeadY - localWorkspaceOrigin.transform.position.y) / remoteHeadY;
 
-        print("ratio " + ratio);
         //if ratio > 1, means I'm the big guy, i can't upscale, so i do nothing.
         if (ratio <= 1)
         {
             float remoteRatio = (remoteHeadY - remoteWorkspaceOrigin.position.y) / localHeadY;
               //if his ratio is <= 1, means he can downscale me over there, so its fine
                 //if not....
-              print("remoteRatio" + remoteRatio);
             if (remoteRatio > 1)
             {
                 Vector3 myHeadRemotePos = new Vector3(remoteWorkspaceOrigin.position.x, remoteWorkspaceOrigin.position.y + localHeadY, remoteWorkspaceOrigin.position.z);
@@ -357,7 +356,6 @@ public class NewMain : MonoBehaviour {
                 Debug.DrawLine(hisHeadRemotePos, myHeadRemotePos, Color.green);
                 //view angle
                 float angle = Vector3.Angle(planevec, viewVec);
-                print("angle " + angle);
                 //now in my space, i get a vector to the ideal eye to eye head position for him
                 Vector3 hisHeadOrigin = localWorkspaceOrigin.position;
                 hisHeadOrigin.y = localHeadY;
@@ -365,7 +363,6 @@ public class NewMain : MonoBehaviour {
                 Vector3 catetoAdjacente = hisHeadOrigin - localHeadPos;
 
                 float heightDiffLocal = catetoAdjacente.magnitude * Mathf.Tan(Mathf.Deg2Rad * angle);
-                print("diffLocal " + heightDiffLocal);
                 ratio = (localHeadY - localWorkspaceOrigin.position.y + heightDiffLocal) / remoteHeadY;
                 Vector3 debugremotehead = localWorkspaceOrigin.position;
                 debugremotehead.y = localHeadY + heightDiffLocal;

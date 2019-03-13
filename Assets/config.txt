@@ -1,4 +1,4 @@
-last.run=2019-03-12-18:58:47
+last.run=2019-03-13-18:53:04
 setup.type=LEFT
 start.formation=FACE_TO_FACE
 
@@ -20,10 +20,10 @@ left.workspaceCenter.transform.rotation=-0.003861481:0.03233589:-0.006906857:0.9
 left.trackedKinect.name=XUXUBELEZA
 left.rigidBodyCalibration.transform.position=0.5075188:1.367918:-0.7997437
 left.rigidBodyCalibration.transform.rotation=0.01751071:-0.9441455:0.1141249:0.3086393
-left.remoteCreepyTrackerDelta.rotation=-0.01047144:0.008027967:8.407166E-05:0.999913
+left.remoteCreepyTrackerDelta.rotation=-0.01282774:-0.003752056:-4.813468E-05:0.9999107
 left.remoteCreepyTrackerDelta.position=0.01:0.01:0.06
-left.eyes.localPosition=-0.027:-0.12:-0.05
-left.eyes.localRotation=0.004188058:-0.01823751:7.639312E-05:0.9998249
+left.eyes.localPosition=-0.005665749:-0.1354534:-0.001975128
+left.eyes.localRotation=-0.06005644:0.01441897:0.02178455:0.9978531
 
 __SETUP ON THE RIGHT__
 right.setup.address=192.168.0.103

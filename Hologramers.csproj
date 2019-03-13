@@ -612,6 +612,7 @@
     <Compile Include="Assets\RavatarManager\Scripts\UdpListener.cs" />
     <Compile Include="Assets\RavatarManager\Scripts\UdpListenerMesh.cs" />
     <Compile Include="Assets\Scripts\BodiesManager.cs" />
+    <Compile Include="Assets\Scripts\Calibration.cs" />
     <Compile Include="Assets\Scripts\ConfigProperties.cs" />
     <Compile Include="Assets\Scripts\CreepyTrackerSurfaceRequest.cs" />
     <Compile Include="Assets\Scripts\CreepyTrackerSurfaceRequestListener.cs" />
