@@ -65,6 +65,7 @@ public class NewMain : MonoBehaviour {
 
     public Transform workspaceTransform;
     public bool calibrated;
+    public float _feetAdjustment;
 
     void Start()
     {
@@ -318,7 +319,12 @@ public class NewMain : MonoBehaviour {
         //Debug.DrawLine(_trackerClientRemote.spineBase.localPosition, _remoteHoloSurface, Color.cyan);
 
         //Translate it back to center of surface
-        Vector3 holoPos = new Vector3(RemoteARCameraRig.position.x - remoteCreepyTrackerPosition.x , remoteCreepyTrackerPosition.y, RemoteARCameraRig.position.z - remoteCreepyTrackerPosition.z );
+
+        Vector3 holoPos = new Vector3(RemoteARCameraRig.position.x - remoteCreepyTrackerPosition.x ,0, RemoteARCameraRig.position.z - remoteCreepyTrackerPosition.z );
+        float side = 1;
+        if (setupLocation == SetupLocation.RIGHT) side = -1;
+        holoPos *= side;
+        holoPos.y =  remoteCreepyTrackerPosition.y - _feetAdjustment;
         hologramPivot.localPosition = holoPos;
         //_trackercharRemote.transform.localPosition = new Vector3(-_trackerClientRemote.spineBase.localPosition.x, 0, -_trackerClientRemote.spineBase.localPosition.z);
 
