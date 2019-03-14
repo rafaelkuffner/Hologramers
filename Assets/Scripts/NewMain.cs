@@ -67,6 +67,9 @@ public class NewMain : MonoBehaviour {
     public bool calibrated;
     public float _feetAdjustment;
 
+    public bool dynamicScale;
+    private bool baselineReady = false;
+
     void Start()
     {
 
@@ -259,10 +262,22 @@ public class NewMain : MonoBehaviour {
 
             if(calibrated) _configureWorkspace();
             _everythingIsConfigured = true;
+
+            
         }
 
+        
         if (_everythingIsConfigured && calibrated && gotClouds)
-            _adjustHologramSize();
+            if(dynamicScale)
+                _adjustHologramSize();
+            else
+            {
+                if (!baselineReady)
+                    _baselineHologramStartingRotationAndScale();
+                _baselineHologramPosition();
+                    
+            }
+            
 
 
 
@@ -380,6 +395,37 @@ public class NewMain : MonoBehaviour {
                 localWorkspaceOrigin.localScale = new Vector3(ratio, ratio, ratio);
             }
         }
+    }
+
+
+    private void _baselineHologramPosition()
+    {
+   
+        Vector3 holoPos = new Vector3(RemoteARCameraRig.position.x - remoteCreepyTrackerPosition.x, 0, RemoteARCameraRig.position.z - remoteCreepyTrackerPosition.z);
+        float side = 1;
+        if (setupLocation == SetupLocation.RIGHT) side = -1;
+        holoPos *= side;
+        holoPos.y = remoteCreepyTrackerPosition.y - _feetAdjustment;
+        hologramPivot.localPosition = holoPos;
+        //_trackercharRemote.transform.localPosition = new Vector3(-_trackerClientRemote.spineBase.localPosition.x, 0, -_trackerClientRemote.spineBase.localPosition.z);
+
+    }
+    private void _baselineHologramStartingRotationAndScale()
+    {
+        Vector3 fw = remoteWorkspaceOrigin.position - RemoteARCameraRig.position;
+        //Adjusting orientation
+        fw.y = 0;
+        Vector3 diff = ARCameraRig.position - localWorkspaceOrigin.position;
+        diff.y = 0;
+        localWorkspaceOrigin.rotation = Quaternion.identity;
+        localWorkspaceOrigin.Rotate(Vector3.Cross(fw, diff), Vector3.Angle(fw, diff), Space.Self);
+        localWorkspaceOrigin.rotation *= remoteCreepyTrackerRotation;
+
+       float ratio = 0.4f /  RemoteARCameraRig.position.y;
+        localWorkspaceOrigin.localScale = new Vector3(ratio, ratio, ratio);
+
+        baselineReady = true;
+        
     }
 
     private void _deploySensors(Sensor[] sensors, Transform parent)
