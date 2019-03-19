@@ -151,7 +151,7 @@ public class Calibration : MonoBehaviour {
     private void calibrateOptiTrackAndCreepyTracker()
     {
 
-        _deploySensors(_localSurface.sensors, localCreepyTrackerOrigin,true);
+        _deploySensors(_localSurface.sensors, localCreepyTrackerOrigin,false);
         Vector3 locpos = _getPositionFromConfig(ConfigProperties.load(ConfigFile, _localPrefix + ".rigidBodyCalibration.transform.position"));
         Quaternion locrot = _getRotationFromConfig(ConfigProperties.load(ConfigFile, _localPrefix + ".rigidBodyCalibration.transform.rotation"));
         string locKinectName = ConfigProperties.load(ConfigFile, _localPrefix + ".trackedKinect.name");
@@ -164,7 +164,7 @@ public class Calibration : MonoBehaviour {
         localCreepyTrackerOrigin.parent = null;
         _sensors[locKinectName].transform.parent = localCreepyTrackerOrigin.transform;
 
-         _deploySensors(_remoteSurface.sensors, remoteCreepyTrackerOrigin, devCalibration);
+         _deploySensors(_remoteSurface.sensors, remoteCreepyTrackerOrigin, false);
       
 
             Vector3 rempos = _getPositionFromConfig(ConfigProperties.load(ConfigFile, _remotePrefix + ".rigidBodyCalibration.transform.position"));

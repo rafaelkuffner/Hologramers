@@ -439,7 +439,7 @@ public class NewMain : MonoBehaviour {
             sensor.transform.parent = parent;
             sensor.transform.localPosition = s.position;
             sensor.transform.localRotation = s.rotation;
-            GameObject cube = LittleCube(sensor.transform, sensor.name + "cube");
+           // GameObject cube = LittleCube(sensor.transform, sensor.name + "cube");
             _sensors[s.id] = sensor;
         }
 
