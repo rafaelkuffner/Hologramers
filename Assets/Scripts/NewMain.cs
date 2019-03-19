@@ -24,7 +24,7 @@ public class NewMain : MonoBehaviour {
     private string _remotePrefix;
 
 
-    public TrackerMesh ravatarManagerTracker;
+    public Tracker ravatarManagerTracker;
 
     private string localTrackerAddress;
     private string remoteTrackerAddress;

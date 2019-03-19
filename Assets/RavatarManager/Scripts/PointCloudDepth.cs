@@ -22,7 +22,7 @@ public class PointCloudDepth : MonoBehaviour
     public int medianFilterSize = 2;
     public bool calculateNormals = true;
 
-    void Start()
+    public void Init()
     {
         _width = 512;
         _height = 424;
@@ -159,7 +159,7 @@ public class PointCloudDepth : MonoBehaviour
             mr.material.SetFloat("_sigmaS", sigmaS);
             mr.material.SetFloat("_sigmaS", sigmaS);
             mr.material.SetInt("_SizeFilter", medianFilterSize);
-            mr.material.SetInt("_calculateNormals", calculateNormals? 1:0);
+            mr.material.SetInt("_calculateNormals", calculateNormals ? 1 : 0);
 
         }
 
@@ -167,7 +167,7 @@ public class PointCloudDepth : MonoBehaviour
 
     public void setPointsUncompressed(byte[] colorBytes, byte[] depthBytes)
     {
-       
+
         _depthTex.LoadRawTextureData(depthBytes);
         _colorTex.LoadRawTextureData(colorBytes);
 

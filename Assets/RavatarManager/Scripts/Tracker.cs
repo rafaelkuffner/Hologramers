@@ -23,6 +23,13 @@ public class Tracker : MonoBehaviour
 
     private Dictionary<string, PointCloudDepth> _clouds;
     private Dictionary<string, GameObject> _cloudGameObjects;
+    public GameObject[] Sensors
+    {
+        get
+        {
+            return _cloudGameObjects.Values.ToArray<GameObject>();
+        }
+    }
 
     public int BUFFER = 868352;
     public int DBUFFER = 868352;
@@ -33,69 +40,69 @@ public class Tracker : MonoBehaviour
     const int START = 1;
     const int STOP = 2;
 
-    void Awake ()
+    private int _listenPort;
+    private int _trackerPort;
+
+    private bool _isInit = false;
+
+    private Transform _parent;
+
+
+    public void Init(int trackerPort, int listenPort, Transform parent)
     {
+        _listenPort = listenPort;
+        _trackerPort = trackerPort;
+        _parent = parent;
+
         Debug.Log("Hello Tracker");
-	    _clouds = new Dictionary<string, PointCloudDepth> ();
+        _clouds = new Dictionary<string, PointCloudDepth>();
         _cloudGameObjects = new Dictionary<string, GameObject>();
         _colorData = new byte[BUFFER];
         _depthData = new byte[DBUFFER];
 
         //////////LOCAL
-        IntPtr output = initLocal("C:\\Users\\rafae\\Desktop\\Data TEST\\output.ini");
-        string calib = Marshal.PtrToStringAnsi(output);
-        processCalibrationMatrix(calib);
+        //IntPtr output = initLocal("C:\\Users\\rafae\\Desktop\\Data TEST\\output.ini");
+        //string calib = Marshal.PtrToStringAnsi(output);
+        //processCalibrationMatrix(calib);
 
         ////////////NETWORK
-        //_loadConfig();
-        //this.gameObject.AddComponent<UdpListener>().udpRestart();
-        //broadCastCloudMessage(START);
 
+        this.gameObject.AddComponent<UdpListener>().udpRestart(_listenPort);
+        broadCastCloudMessage(START);
+        _isInit = true;
     }
 
 
-    private void FixedUpdate()
+    private void Update()
     {
+        if (!_isInit) return;
+
         foreach (KeyValuePair<string, PointCloudDepth> p in _clouds)
         {
-            if(getFrameAndNormal(p.Key, _colorData, _depthData, null)) { 
+            if (getFrameAndNormal(p.Key, _colorData, _depthData, null))
+            {
                 _clouds[p.Key].setPointsUncompressed(_colorData, _depthData);
                 _clouds[p.Key].show();
             }
         }
-        
     }
 
-    public void hideAllClouds ()
-	{
-		foreach (PointCloudDepth s in _clouds.Values) {
-			s.hide ();
-		}
+    public void hideAllClouds()
+    {
+        foreach (PointCloudDepth s in _clouds.Values)
+        {
+            s.hide();
+        }
         stopClouds();
         broadCastCloudMessage(STOP);
-		
-	}
 
-    private void _loadConfig()
-    {
-        string filePath = Application.dataPath + "/" + TrackerProperties.Instance.configFilename;
-
-        string port = ConfigProperties.load(filePath, "udp.listenport");
-        if (port != "")
-        {
-            TrackerProperties.Instance.listenPort = int.Parse(port);
-        }
-        port = ConfigProperties.load(filePath, "udp.trackerport");
-        if (port != "")
-        {
-            TrackerProperties.Instance.trackerPort = int.Parse(port);
-        }
     }
 
     public void initTCPLayer()
     {
-        print("Started TCP Layer with " + _cloudGameObjects.Count);
-        initNetwork(TrackerProperties.Instance.listenPort,_cloudGameObjects.Count);
+        initNetwork(_listenPort, _cloudGameObjects.Count);
+        Debug.Log("Started TCP Layer with " + _cloudGameObjects.Count);
+        GameObject.Find("main").GetComponent<NewMain>().setupSensors(Sensors);
     }
 
     public void processCalibrationMatrix(string calibration)
@@ -119,13 +126,14 @@ public class Tracker : MonoBehaviour
             cloudobj.AddComponent<PointCloudDepth>();
 
             PointCloudDepth cloud = cloudobj.GetComponent<PointCloudDepth>();
+            cloud.Init();
             _clouds.Add(id, cloud);
             _cloudGameObjects.Add(id, cloudobj);
         }
-        if (_cloudGameObjects.Count > 0)
-            Camera.main.GetComponent<MouseOrbitImproved>().target = _cloudGameObjects.First().Value.transform;
-       
+
+
     }
+
     public void processCalibration(string calibration)
     {
         string[] tokens = calibration.Split(MessageSeparators.L1);
@@ -143,27 +151,29 @@ public class Tracker : MonoBehaviour
             float rw = float.Parse(chunks[7]);
 
             GameObject cloudobj = new GameObject(id);
-            cloudobj.transform.localPosition = new Vector3(px,py,pz);
-            cloudobj.transform.localRotation = new Quaternion(rx,ry,rz,rw);
+            cloudobj.transform.localPosition = new Vector3(px, py, pz);
+            cloudobj.transform.localRotation = new Quaternion(rx, ry, rz, rw);
             cloudobj.transform.localScale = new Vector3(-1, 1, 1);
             cloudobj.AddComponent<PointCloudDepth>();
             PointCloudDepth cloud = cloudobj.GetComponent<PointCloudDepth>();
+            cloud.Init();
             _clouds.Add(id, cloud);
             _cloudGameObjects.Add(id, cloudobj);
 
+
+            cloudobj.transform.parent = _parent;
         }
-        if(_cloudGameObjects.Count > 0)
-            Camera.main.GetComponent<MouseOrbitImproved>().target = _cloudGameObjects.First().Value.transform;
+
     }
 
 
     public void broadCastCloudMessage(int mode)
     {
         UdpClient udp = new UdpClient();
-        string message = AvatarMessage.createRequestMessage(mode, TrackerProperties.Instance.listenPort);
+        string message = AvatarMessage.createRequestMessage(mode, _listenPort);
         byte[] data = Encoding.UTF8.GetBytes(message);
-        IPEndPoint remoteEndPoint = new IPEndPoint(IPAddress.Broadcast, TrackerProperties.Instance.trackerPort);
-        Debug.Log("Sent request to port" + TrackerProperties.Instance.trackerPort + " with content " + message);
+        IPEndPoint remoteEndPoint = new IPEndPoint(IPAddress.Broadcast, _trackerPort);
+        Debug.Log("Sent request to port" + _trackerPort + " with content " + message);
         udp.Send(data, data.Length, remoteEndPoint);
 
     }
